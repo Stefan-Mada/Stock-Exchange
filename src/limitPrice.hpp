@@ -33,7 +33,7 @@ struct LimitPrice {
     int getPrice() const;
 
     /**
-     * @brief Will execute a certain number of shares at this price.
+     * @brief Will execute a certain number of shares at this price, modifying orders, but not deleting them.
      * 
      * @param baseOrderId The base order that is trying to be filled here
      * @param numShares Number of shares to fulfill

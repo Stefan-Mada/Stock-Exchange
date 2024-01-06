@@ -16,41 +16,18 @@ namespace Exchange {
 std::optional<int> OrderBook::addOrder(const Order& order) {
     const auto orderPrice = order.getLimitPrice();
     const auto orderId = order.getOrderId();
+    auto& buyOrSellMap = (order.getOrderType() == OrderType::buy) ? buyMap : sellMap;
 
-    switch(order.getOrderType()) {
-        case OrderType::buy: {
-            if(orderPrice >= getBestAsk())
-                return executeOrder(order);
+    if(isExecutable(order))
+        return executeOrder(order);
 
-            // TODO: Fix this monstrous code, try to eliminate if/else branch with emplacing
-            if(priceToLimitMap.contains(orderPrice)) {
-                auto limitIterator = priceToLimitMap.try_emplace(orderPrice, orderPrice).first;
-                auto orderIterator = limitIterator->second.addOrder(order);
-                idToOrderIteratorMap[orderId] = orderIterator;
-            }
-            else {
-                buyMap.emplace(orderPrice, orderPrice);
-                idToOrderIteratorMap[orderId] = buyMap.at(orderPrice).addOrder(order);
-            }
-            break;
-        }
-        case OrderType::sell: {
-            if(orderPrice <= getBestBid())
-                return executeOrder(order);
+    auto [limitPriceIterator, isNewElem] = buyOrSellMap.try_emplace(orderPrice, orderPrice);
+    auto orderIterator = limitPriceIterator->second.addOrder(order);
+    idToOrderIteratorMap.insert({orderId, orderIterator});
 
-            if(priceToLimitMap.contains(orderPrice)) {
-                auto limitIterator = priceToLimitMap.try_emplace(orderPrice, orderPrice).first;
-                auto orderIterator = limitIterator->second.addOrder(order);
-                idToOrderIteratorMap[orderId] = orderIterator;
+    if(isNewElem)
+        priceToLimitMap.insert({orderPrice, limitPriceIterator->second});
 
-            }
-            else {
-                sellMap.emplace(orderPrice, orderPrice);
-                idToOrderIteratorMap[orderId] = sellMap.at(orderPrice).addOrder(order);
-            }
-            break;
-        }
-    }
 
     return {};
 }
@@ -125,20 +102,32 @@ int OrderBook::executeOrder(const Order& order) {
     return moneyEarned;
 }
 
-int OrderBook::getVolumeAtLimit(int price) {
+int OrderBook::getVolumeAtLimit(int price) const {
     return priceToLimitMap.at(price).getVolume();
 }
 
-int OrderBook::getBestBid() {
+int OrderBook::getBestBid() const {
     return std::prev(buyMap.end())->second.getPrice();
 }
 
-int OrderBook::getBestAsk() {
+int OrderBook::getBestAsk() const {
     return sellMap.begin()->second.getPrice();
 }
 
-int OrderBook::getTotalVolume() {
+int OrderBook::getTotalVolume() const {
     return totalVolume;
+}
+
+bool OrderBook::isExecutable(const Order& order) const {
+    const auto orderType = order.getOrderType();
+    const auto price = order.getLimitPrice();
+
+    if(orderType == OrderType::buy && price >= getBestAsk())
+        return true;
+    else if(orderType == OrderType::sell && price <= getBestBid())
+        return true;
+    
+    return false;
 }
 
 };

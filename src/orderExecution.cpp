@@ -48,6 +48,10 @@ int OrderExecution::getTotalSharesExecuted() const {
     return totalSharesExcecuted;
 }
 
+bool OrderExecution::hasPartialExecution() const {
+    return partiallyFulfilledOrder.has_value();
+}
+
 
 
 }
