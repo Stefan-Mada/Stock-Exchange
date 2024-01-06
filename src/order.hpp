@@ -12,6 +12,8 @@
 #ifndef ORDER_HPP
 #define ORDER_HPP
 
+#include "orderExecution.hpp"
+
 namespace Exchange {
 
 /**
@@ -39,12 +41,13 @@ struct Order {
     int getTimeInForce() const;
 
     /**
-     * @brief Fills some or all of the shares of this order, but not all. Modifies this order object.
+     * @brief Fills some or all of the shares of this order. Modifies this order object.
      * 
+     * @param baseOrderId The base order that is being fulfilled by this order
      * @param numShares Number of shares executed
-     * @return Amount of money this order has earned
+     * @return Order Execution with this order fulfilled, partially or fully
      */
-    int execute(int numShares);
+    OrderExecution execute(int baseOrderId, int numShares);
 
 private:
     int orderId;

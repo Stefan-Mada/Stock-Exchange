@@ -10,6 +10,7 @@
  */
 
 #include "orderExecution.hpp"
+#include "order.hpp"
 
 namespace Exchange {
 
@@ -22,6 +23,7 @@ OrderExecution& OrderExecution::operator+=(const OrderExecution& rhs) {
     fulfilledOrderIds.insert(fulfilledOrderIds.end(), rhs.fulfilledOrderIds.begin(), rhs.fulfilledOrderIds.end());
 
     currProfit += rhs.currProfit;
+    totalSharesExchanged += rhs.totalSharesExchanged;
 
     return *this;
 }
@@ -29,6 +31,7 @@ OrderExecution& OrderExecution::operator+=(const OrderExecution& rhs) {
 void OrderExecution::executeOrder(const Order& order) {
     currProfit += order.getLimitPrice() * order.getShares();
     fulfilledOrderIds.push_back(order.getOrderId());
+    totalSharesExchanged += order.getShares();
 }
 
 void OrderExecution::executeOrder(const Order& order, int shares) {
@@ -37,6 +40,7 @@ void OrderExecution::executeOrder(const Order& order, int shares) {
     else {
         currProfit += order.getLimitPrice() * shares;
         partiallyFulfilledOrder = {order.getOrderId(), shares};
+        totalSharesExchanged += shares;
     }
 }
 

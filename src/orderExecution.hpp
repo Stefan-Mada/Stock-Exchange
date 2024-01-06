@@ -16,9 +16,12 @@
 #include <optional>
 #include <utility>
 #include <stdexcept>
-#include "order.hpp"
 
 namespace Exchange {
+
+// rather than including "order.hpp", which would cause a cyclic dependency, just declare class here
+struct Order;
+
 
 /**
  * @brief Represents all orders executed to fulfill one submitted order (the base order)
@@ -37,6 +40,7 @@ private:
     /// @brief ID of order that is being executed to start with
     int baseId;
     int currProfit = 0;
+    int totalSharesExchanged = 0;
     std::vector<int> fulfilledOrderIds;
 
     /// @brief Pair of orderId, and number of shares executed
