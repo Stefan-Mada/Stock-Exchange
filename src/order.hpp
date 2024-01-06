@@ -30,7 +30,7 @@ enum OrderType {
  * 
  */
 struct Order {
-    Order(int orderId, OrderType orderType, int shares, int limitPrice, int timeInForce)
+    Order(int orderId, OrderType orderType, int shares, int limitPrice, int timeInForce = 0)
         : orderId{orderId}, orderType{orderType}, shares{shares}, limitPrice{limitPrice}, timeInForce{timeInForce} {}
 
     OrderType getOrderType() const;
@@ -59,7 +59,7 @@ private:
     int limitPrice;
 
     // TODO: Do this.
-    /// @brief Currently does nothing, but will hopefully in the future be used to remove expired orders
+    /// @brief Currently does nothing, but will hopefully in the future be used to remove expired orders. TIF = 0 is indefinite
     int timeInForce;
 };
 

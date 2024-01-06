@@ -28,16 +28,16 @@ namespace Exchange {
 struct OrderBook {
     OrderBook() = default;
 
-    std::optional<OrderExecution> addOrder(const Order& order);
+    OrderExecution addOrder(OrderType orderType, int shares, int limitPrice, int timeInForce = 0);
     void cancelOrder(int orderId);
     int getVolumeAtLimit(int price) const;
-    int getBestBid() const;
-    int getBestAsk() const;
+    std::optional<int> getBestBid() const;
+    std::optional<int> getBestAsk() const;
     int getTotalVolume() const;
 
 private:
+    OrderExecution addOrder(const Order& order);
     OrderExecution executeOrder(const Order& order);
-    int fulfillOrder(Order& orderToFulfill, int numSharesExecuted);
     bool isExecutable(const Order& order) const;
 
     std::map<int, LimitPrice> buyMap;
@@ -46,10 +46,10 @@ private:
     std::unordered_map<int, std::list<Order>::iterator> idToOrderIteratorMap;
     
     /// @brief Can avoid having 2 maps for buying and selling, as the ranges should never overlap
-    std::unordered_map<int, LimitPrice> priceToLimitMap;
+    std::unordered_map<int, LimitPrice&> priceToLimitMap;
 
     int totalVolume = 0;
-    //int currentOrderId = 0;
+    int currentOrderId = 0;
 };
 
 };

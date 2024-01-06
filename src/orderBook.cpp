@@ -13,7 +13,11 @@
 
 namespace Exchange {
 
-std::optional<OrderExecution> OrderBook::addOrder(const Order& order) {
+OrderExecution OrderBook::addOrder(OrderType orderType, int shares, int limitPrice, int timeInForce) {
+    return addOrder(Order{currentOrderId++, orderType, shares, limitPrice, timeInForce});
+}
+
+OrderExecution OrderBook::addOrder(const Order& order) {
     const auto orderPrice = order.getLimitPrice();
     const auto orderId = order.getOrderId();
     auto& buyOrSellMap = (order.getOrderType() == OrderType::buy) ? buyMap : sellMap;
@@ -29,7 +33,8 @@ std::optional<OrderExecution> OrderBook::addOrder(const Order& order) {
         priceToLimitMap.insert({orderPrice, limitPriceIterator->second});
 
 
-    return {};
+    // if order is simply added without executing, return an empty order execution with the ID of the order
+    return OrderExecution(order.getOrderId());
 }
 
 void OrderBook::cancelOrder(int orderId) {
@@ -52,10 +57,11 @@ OrderExecution OrderBook::executeOrder(const Order& order) {
     OrderExecution totalExec{baseOrderId};
 
     while(sharesLeftToExec > 0 && isExecutable(order)) {
-        LimitPrice& targetLimit = (order.getOrderType() == OrderType::buy) ? buyMap.begin()->second : (--sellMap.end())->second;
-
-        const int sharesLeftToExec = startingShares - totalExec.getTotalSharesExecuted();
+        LimitPrice& targetLimit = (order.getOrderType() == OrderType::sell) ? buyMap.begin()->second : (--sellMap.end())->second;
+         
+        sharesLeftToExec = startingShares - totalExec.getTotalSharesExecuted();
         const int sharesToExecInLimit = std::min(sharesLeftToExec, targetLimit.getDepth());
+
         OrderExecution limitExecution = targetLimit.executeNumberOfShares(baseOrderId, sharesToExecInLimit);
 
         for(const auto fulfilledId : limitExecution.getFulfilledOrderIds())
@@ -67,18 +73,29 @@ OrderExecution OrderBook::executeOrder(const Order& order) {
     if(sharesLeftToExec > 0) 
         addOrder(order.copyWithNewShareCount(sharesLeftToExec));
 
+    totalVolume += totalExec.getTotalSharesExecuted();
+
     return totalExec;
 }
 
 int OrderBook::getVolumeAtLimit(int price) const {
+    if(!priceToLimitMap.contains(price))
+        return 0;
+
     return priceToLimitMap.at(price).getVolume();
 }
 
-int OrderBook::getBestBid() const {
+std::optional<int> OrderBook::getBestBid() const {
+    if(buyMap.empty())
+        return {};
+
     return std::prev(buyMap.end())->second.getPrice();
 }
 
-int OrderBook::getBestAsk() const {
+std::optional<int> OrderBook::getBestAsk() const {
+    if(sellMap.empty())
+        return {};
+
     return sellMap.begin()->second.getPrice();
 }
 
@@ -90,9 +107,12 @@ bool OrderBook::isExecutable(const Order& order) const {
     const auto orderType = order.getOrderType();
     const auto price = order.getLimitPrice();
 
-    if(orderType == OrderType::buy && price >= getBestAsk())
+    auto bestAsk = getBestAsk();
+    auto bestBid = getBestBid();
+
+    if(orderType == OrderType::buy && bestAsk && price >= bestAsk.value())
         return true;
-    else if(orderType == OrderType::sell && price <= getBestBid())
+    else if(orderType == OrderType::sell && bestBid && price <= bestBid)
         return true;
     
     return false;

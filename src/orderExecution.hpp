@@ -15,7 +15,6 @@
 #include <vector>
 #include <optional>
 #include <utility>
-#include <stdexcept>
 
 namespace Exchange {
 
@@ -40,6 +39,10 @@ struct OrderExecution {
 
     bool hasPartialExecution() const;
 
+    int getBaseId() const;
+
+    int getMoneyExchanged() const;
+
     const std::vector<int>& getFulfilledOrderIds() const;
 
     const std::optional<std::pair<int, int>>& getPartiallyFulfilledOrder() const;
@@ -47,7 +50,7 @@ struct OrderExecution {
 private:
     /// @brief ID of order that is being executed to start with
     int baseId;
-    int currProfit = 0;
+    int moneyExchanged = 0;
     int totalSharesExcecuted = 0;
     std::vector<int> fulfilledOrderIds;
 
