@@ -38,6 +38,8 @@ struct OrderExecution {
 
     int getTotalSharesExecuted() const;
 
+    bool hasPartialExecution() const;
+
 private:
     /// @brief ID of order that is being executed to start with
     int baseId;

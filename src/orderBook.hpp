@@ -30,14 +30,15 @@ struct OrderBook {
 
     std::optional<int> addOrder(const Order& order);
     void cancelOrder(int orderId);
-    int getVolumeAtLimit(int price);
-    int getBestBid();
-    int getBestAsk();
-    int getTotalVolume();
+    int getVolumeAtLimit(int price) const;
+    int getBestBid() const;
+    int getBestAsk() const;
+    int getTotalVolume() const;
 
 private:
     int executeOrder(const Order& order);
     int fulfillOrder(Order& orderToFulfill, int numSharesExecuted);
+    bool isExecutable(const Order& order) const;
 
     std::map<int, LimitPrice> buyMap;
     std::map<int, LimitPrice> sellMap;
