@@ -23,7 +23,7 @@ OrderExecution& OrderExecution::operator+=(const OrderExecution& rhs) {
     fulfilledOrderIds.insert(fulfilledOrderIds.end(), rhs.fulfilledOrderIds.begin(), rhs.fulfilledOrderIds.end());
 
     currProfit += rhs.currProfit;
-    totalSharesExchanged += rhs.totalSharesExchanged;
+    totalSharesExcecuted += rhs.totalSharesExcecuted;
 
     return *this;
 }
@@ -31,7 +31,7 @@ OrderExecution& OrderExecution::operator+=(const OrderExecution& rhs) {
 void OrderExecution::executeOrder(const Order& order) {
     currProfit += order.getLimitPrice() * order.getShares();
     fulfilledOrderIds.push_back(order.getOrderId());
-    totalSharesExchanged += order.getShares();
+    totalSharesExcecuted += order.getShares();
 }
 
 void OrderExecution::executeOrder(const Order& order, int shares) {
@@ -40,8 +40,12 @@ void OrderExecution::executeOrder(const Order& order, int shares) {
     else {
         currProfit += order.getLimitPrice() * shares;
         partiallyFulfilledOrder = {order.getOrderId(), shares};
-        totalSharesExchanged += shares;
+        totalSharesExcecuted += shares;
     }
+}
+
+int OrderExecution::getTotalSharesExecuted() const {
+    return totalSharesExcecuted;
 }
 
 

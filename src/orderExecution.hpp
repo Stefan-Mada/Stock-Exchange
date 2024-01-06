@@ -36,11 +36,13 @@ struct OrderExecution {
 
     void executeOrder(const Order& order, int shares);
 
+    int getTotalSharesExecuted() const;
+
 private:
     /// @brief ID of order that is being executed to start with
     int baseId;
     int currProfit = 0;
-    int totalSharesExchanged = 0;
+    int totalSharesExcecuted = 0;
     std::vector<int> fulfilledOrderIds;
 
     /// @brief Pair of orderId, and number of shares executed

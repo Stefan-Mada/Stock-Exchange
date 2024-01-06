@@ -28,9 +28,19 @@ struct LimitPrice {
     std::list<Order>::iterator addOrder(const Order& order);
     void removeOrder(std::list<Order>::const_iterator pos);
     bool isEmpty() const;
-    Order& getFirstOrder() const;
+    const Order& getFirstOrder() const;
     int getVolume() const;
     int getPrice() const;
+
+    /**
+     * @brief Will execute a certain number of shares at this price.
+     * 
+     * @param baseOrderId The base order that is trying to be filled here
+     * @param numShares Number of shares to fulfill
+     * @return OrderExecution object with shares executed information
+     * @warning Will not accept more shares than exist depth in the limit
+     */
+    OrderExecution executeNumberOfShares(int baseOrderId, int numShares);
 
 private:
     int limitPrice;
