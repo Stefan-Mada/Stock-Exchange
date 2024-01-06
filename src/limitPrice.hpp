@@ -31,9 +31,10 @@ struct LimitPrice {
     const Order& getFirstOrder() const;
     int getVolume() const;
     int getPrice() const;
+    int getDepth() const;
 
     /**
-     * @brief Will execute a certain number of shares at this price, modifying orders, but not deleting them.
+     * @brief Will execute a certain number of shares at this price, modifying orders, and deleting fully executed orders.
      * 
      * @param baseOrderId The base order that is trying to be filled here
      * @param numShares Number of shares to fulfill

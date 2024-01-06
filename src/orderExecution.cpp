@@ -52,6 +52,14 @@ bool OrderExecution::hasPartialExecution() const {
     return partiallyFulfilledOrder.has_value();
 }
 
+const std::vector<int>& OrderExecution::getFulfilledOrderIds() const {
+    return fulfilledOrderIds;
+}
+
+const std::optional<std::pair<int, int>>& OrderExecution::getPartiallyFulfilledOrder() const {
+    return partiallyFulfilledOrder;
+}
+
 
 
 }

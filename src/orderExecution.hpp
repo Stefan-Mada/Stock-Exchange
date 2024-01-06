@@ -40,6 +40,10 @@ struct OrderExecution {
 
     bool hasPartialExecution() const;
 
+    const std::vector<int>& getFulfilledOrderIds() const;
+
+    const std::optional<std::pair<int, int>>& getPartiallyFulfilledOrder() const;
+
 private:
     /// @brief ID of order that is being executed to start with
     int baseId;

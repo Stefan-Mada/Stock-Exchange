@@ -28,7 +28,7 @@ namespace Exchange {
 struct OrderBook {
     OrderBook() = default;
 
-    std::optional<int> addOrder(const Order& order);
+    std::optional<OrderExecution> addOrder(const Order& order);
     void cancelOrder(int orderId);
     int getVolumeAtLimit(int price) const;
     int getBestBid() const;
@@ -36,7 +36,7 @@ struct OrderBook {
     int getTotalVolume() const;
 
 private:
-    int executeOrder(const Order& order);
+    OrderExecution executeOrder(const Order& order);
     int fulfillOrder(Order& orderToFulfill, int numSharesExecuted);
     bool isExecutable(const Order& order) const;
 
