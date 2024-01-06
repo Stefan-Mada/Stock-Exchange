@@ -60,7 +60,6 @@ private:
     int limitPrice;
     int entryTime;
     int timeInForce;
-    int moneyEarned = 0;
 };
 
 };

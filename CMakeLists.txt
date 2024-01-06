@@ -5,21 +5,27 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic")
 
-# Set list of all project headers
-set(STOCKEXCHANGE_SRCS  src/stockExchange.cpp
-                        src/orderBook.cpp)
+# Set list of all project sources, excluding main file
+set(STOCKEXCHANGE_SRCS  src/orderBook.cpp
+                        src/limitPrice.cpp
+                        src/order.cpp
+                        src/orderExecution.cpp)
 
 # Create actual executable
-# add_executable(Stock-Exchange ${STOCKEXCHANGE_SRCS})
+add_executable(Stock-Exchange   src/stockExchange.cpp
+                                ${STOCKEXCHANGE_SRCS})
 
 # Set include directory
-# target_include_directories(Stock-Exchange PRIVATE include)
+target_include_directories(Stock-Exchange PRIVATE include)
 
-# Set up testing framework
+# Have executable force C++20
+target_compile_features(Stock-Exchange PRIVATE cxx_std_20)
+
+# Set list of all test sources, INCLUDING test main
 set(TEST_SOURCES tests/main.cpp tests/orderBook.test.cpp)
 
 # Make tests executable
-add_executable(tests ${TEST_SOURCES})
+add_executable(tests ${TEST_SOURCES} ${STOCKEXCHANGE_SRCS})
 target_include_directories(tests PRIVATE include)
 target_compile_features(tests PRIVATE cxx_std_20)
 
