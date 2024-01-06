@@ -9,6 +9,7 @@
  * 
  */
 
+#include <stdexcept>
 #include "orderExecution.hpp"
 #include "order.hpp"
 
@@ -22,14 +23,14 @@ OrderExecution& OrderExecution::operator+=(const OrderExecution& rhs) {
 
     fulfilledOrderIds.insert(fulfilledOrderIds.end(), rhs.fulfilledOrderIds.begin(), rhs.fulfilledOrderIds.end());
 
-    currProfit += rhs.currProfit;
+    moneyExchanged += rhs.moneyExchanged;
     totalSharesExcecuted += rhs.totalSharesExcecuted;
 
     return *this;
 }
 
 void OrderExecution::executeOrder(const Order& order) {
-    currProfit += order.getLimitPrice() * order.getShares();
+    moneyExchanged += order.getLimitPrice() * order.getShares();
     fulfilledOrderIds.push_back(order.getOrderId());
     totalSharesExcecuted += order.getShares();
 }
@@ -38,7 +39,7 @@ void OrderExecution::executeOrder(const Order& order, int shares) {
     if(shares >= order.getShares())
         executeOrder(order);
     else {
-        currProfit += order.getLimitPrice() * shares;
+        moneyExchanged += order.getLimitPrice() * shares;
         partiallyFulfilledOrder = {order.getOrderId(), shares};
         totalSharesExcecuted += shares;
     }
@@ -50,6 +51,14 @@ int OrderExecution::getTotalSharesExecuted() const {
 
 bool OrderExecution::hasPartialExecution() const {
     return partiallyFulfilledOrder.has_value();
+}
+
+int OrderExecution::getBaseId() const {
+    return baseId;
+}
+
+int OrderExecution::getMoneyExchanged() const {
+    return moneyExchanged;
 }
 
 const std::vector<int>& OrderExecution::getFulfilledOrderIds() const {

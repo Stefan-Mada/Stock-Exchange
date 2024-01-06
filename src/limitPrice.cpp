@@ -9,6 +9,7 @@
  * 
  */
 
+#include <stdexcept>
 #include "limitPrice.hpp"
 
 namespace Exchange {
@@ -59,6 +60,8 @@ OrderExecution LimitPrice::executeNumberOfShares(int baseOrderId, int numShares)
         if(frontOrder.getShares() == 0)
             limitOrders.pop_front();
     }
+
+    volume += totalOrderExecution.getTotalSharesExecuted();
 
     return totalOrderExecution;
 }

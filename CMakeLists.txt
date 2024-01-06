@@ -1,9 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
 project(Stock-Exchange VERSION 1.0 LANGUAGES CXX)
 
+# Set default build type to debug
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wshadow")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address,undefined -fno-sanitize-recover=address,undefined ${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Set list of all project sources, excluding main file
 set(STOCKEXCHANGE_SRCS  src/orderBook.cpp
@@ -37,7 +47,7 @@ set(TEST_SOURCES tests/main.cpp tests/orderBook.test.cpp)
 add_executable(tests ${TEST_SOURCES})
 
 # Do all linking business, same as above really
-target_include_directories(tests PRIVATE include)
+target_include_directories(tests PRIVATE include src)
 target_link_libraries(tests PRIVATE StockExchangeLib)
 target_compile_features(tests PRIVATE cxx_std_20)
 
@@ -51,9 +61,9 @@ add_test(
 )
 
 # run tests after build
-add_custom_command(
-    TARGET tests
-    POST_BUILD
-    COMMENT "Run tests after build"
-    COMMAND ctest --output-on-failure
-)
+# add_custom_command(
+#     TARGET tests
+#     POST_BUILD
+#     COMMENT "Run tests after build"
+#     COMMAND ctest --output-on-failure
+# )
