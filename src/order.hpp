@@ -49,6 +49,10 @@ struct Order {
      */
     OrderExecution execute(int baseOrderId, int numShares);
 
+    Order& updateShareCount(const int newShares);
+    Order copyWithNewShareCount(const int newShares) const;
+
+
 private:
     int orderId;
     OrderType orderType;

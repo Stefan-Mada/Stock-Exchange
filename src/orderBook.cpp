@@ -13,7 +13,7 @@
 
 namespace Exchange {
 
-std::optional<int> OrderBook::addOrder(const Order& order) {
+std::optional<OrderExecution> OrderBook::addOrder(const Order& order) {
     const auto orderPrice = order.getLimitPrice();
     const auto orderId = order.getOrderId();
     auto& buyOrSellMap = (order.getOrderType() == OrderType::buy) ? buyMap : sellMap;
@@ -44,62 +44,31 @@ void OrderBook::cancelOrder(int orderId) {
     // but would add O(logn) complexity unnecessarily - can just keep empty limitPrices
 }
 
-int OrderBook::fulfillOrder(Order& orderToFulfill, int numSharesExecuted) {
-    int orderShares = orderToFulfill.getShares();
-    int sharesToExecute = std::min(orderShares, numSharesExecuted);
-
-    int moneyGenerated = orderToFulfill.execute(sharesToExecute);
-    totalVolume += sharesToExecute;
-
-    if(orderToFulfill.getShares() == 0)
-        cancelOrder(orderToFulfill.getOrderId());
-
-    return moneyGenerated;
-}
-
-int OrderBook::executeOrder(const Order& order) {
-    int remainingShares = order.getShares();
+OrderExecution OrderBook::executeOrder(const Order& order) {
+    const int startingShares = order.getShares();
     const int orderPrice = order.getLimitPrice();
+    const int baseOrderId = order.getOrderId();
+    int sharesLeftToExec = startingShares;
 
-    int moneyEarned = 0;
+    OrderExecution totalExec{baseOrderId};
 
-    switch(order.getOrderType()) {
-        case OrderType::buy: {
-            while(remainingShares > 0 && getBestAsk() <= orderPrice) {
-                Order& bestAsk = sellMap.begin()->second.getFirstOrder();
-                int bestAskShares = bestAsk.getShares();
-                int sharesToExecute = std::min(bestAskShares, remainingShares);
+    while(sharesLeftToExec > 0 && isExecutable(order)) {
+        LimitPrice& targetLimit = (order.getOrderType() == OrderType::buy) ? buyMap.begin()->second : (--sellMap.end())->second;
 
-                int sellerMoneyGenerated = fulfillOrder(bestAsk, sharesToExecute);
-                moneyEarned -= sellerMoneyGenerated;
+        const int sharesLeftToExec = startingShares - totalExec.getTotalSharesExecuted();
+        const int sharesToExecInLimit = std::min(sharesLeftToExec, targetLimit.getDepth());
+        OrderExecution limitExecution = targetLimit.executeNumberOfShares(baseOrderId, sharesToExecInLimit);
 
-                remainingShares -= sharesToExecute;
-            }
-            break;
-        }
-        case OrderType::sell: {
-            while(remainingShares > 0 && getBestBid() >= orderPrice) {
-                Order& bestBid = std::prev(buyMap.end())->second.getFirstOrder();
-                int bestBidShares = bestBid.getShares();
-                int sharesToExecute = std::min(bestBidShares, remainingShares);
+        for(const auto fulfilledId : limitExecution.getFulfilledOrderIds())
+            idToOrderIteratorMap.erase(fulfilledId);
 
-                int buyerMoneyGenerated = fulfillOrder(bestBid, sharesToExecute);
-                moneyEarned -= buyerMoneyGenerated;
-
-                remainingShares -= sharesToExecute;
-            }
-            break;
-        }
+        totalExec += limitExecution;
     }
 
-    if(remainingShares > 0) {
-        Order updatedOrder{ order.getOrderId(), order.getOrderType(), remainingShares, 
-                            order.getLimitPrice(), order.getEntryTime(), order.getTimeInForce()};
+    if(sharesLeftToExec > 0) 
+        addOrder(order.copyWithNewShareCount(sharesLeftToExec));
 
-        addOrder(updatedOrder);
-    }
-
-    return moneyEarned;
+    return totalExec;
 }
 
 int OrderBook::getVolumeAtLimit(int price) const {

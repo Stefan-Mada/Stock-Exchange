@@ -45,5 +45,16 @@ OrderExecution Order::execute(int baseOrderId, int numShares) {
     return orderExecution;
 }
 
+Order& Order::updateShareCount(const int newShares) {
+    shares = newShares;
+    return *this;
+}
+
+Order Order::copyWithNewShareCount(const int newShares) const {
+    Order newOrder(*this);
+    newOrder.shares = newShares;
+    return newOrder;
+}
+
 }
 

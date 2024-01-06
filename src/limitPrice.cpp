@@ -40,6 +40,10 @@ int LimitPrice::getPrice() const {
     return limitPrice;
 }
 
+int LimitPrice::getDepth() const {
+    return depth;
+}
+
 OrderExecution LimitPrice::executeNumberOfShares(int baseOrderId, int numShares) {
     if(numShares > depth)
         throw std::invalid_argument("Can't execute more shares in LimitPrice than exist in depth");
@@ -47,9 +51,13 @@ OrderExecution LimitPrice::executeNumberOfShares(int baseOrderId, int numShares)
     OrderExecution totalOrderExecution(baseOrderId);
 
     while(numShares > 0) {
-        OrderExecution firstOrderExec = limitOrders.front().execute(baseOrderId, numShares);
+        Order& frontOrder = limitOrders.front();
+        OrderExecution firstOrderExec = frontOrder.execute(baseOrderId, numShares);
         numShares -= firstOrderExec.getTotalSharesExecuted();
         totalOrderExecution += firstOrderExec;
+
+        if(frontOrder.getShares() == 0)
+            limitOrders.pop_front();
     }
 
     return totalOrderExecution;
