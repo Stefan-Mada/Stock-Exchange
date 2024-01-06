@@ -46,7 +46,6 @@ void OrderBook::cancelOrder(int orderId) {
 
 OrderExecution OrderBook::executeOrder(const Order& order) {
     const int startingShares = order.getShares();
-    const int orderPrice = order.getLimitPrice();
     const int baseOrderId = order.getOrderId();
     int sharesLeftToExec = startingShares;
 
