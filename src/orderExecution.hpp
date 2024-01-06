@@ -1,6 +1,6 @@
 /**
  * @file orderExecution.hpp
- * @author Stefan Mada
+ * @author Stefan Mada (me@stefanmada.com)
  * @brief File defining class that stores information about order executions
  * @version 1.0
  * @date 2024-01-04
@@ -12,8 +12,37 @@
 #ifndef ORDEREXECUTION_HPP
 #define ORDEREXECUTION_HPP
 
-struct OrderExecution {
+#include <vector>
+#include <optional>
+#include <utility>
+#include <stdexcept>
+#include "order.hpp"
 
+namespace Exchange {
+
+/**
+ * @brief Represents all orders executed to fulfill one submitted order (the base order)
+ * 
+ */
+struct OrderExecution {
+    OrderExecution(int baseId) : baseId{baseId} {}
+
+    OrderExecution& operator+=(const OrderExecution& rhs);
+
+    void executeOrder(const Order& order);
+
+    void executeOrder(const Order& order, int shares);
+
+private:
+    /// @brief ID of order that is being executed to start with
+    int baseId;
+    int currProfit = 0;
+    std::vector<int> fulfilledOrderIds;
+
+    /// @brief Pair of orderId, and number of shares executed
+    std::optional<std::pair<int, int>> partiallyFulfilledOrder;
 };
+
+}
 
 #endif

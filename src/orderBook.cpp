@@ -1,6 +1,6 @@
 /**
  * @file orderBook.cpp
- * @author Stefan Mada
+ * @author Stefan Mada (me@stefanmada.com)
  * @brief Implements order book member functions
  * @version 1.0
  * @date 2024-01-04
