@@ -48,7 +48,7 @@ private:
     std::unordered_map<int, LimitPrice> priceToLimitMap;
 
     int totalVolume = 0;
-    int currentOrderId = 0;
+    //int currentOrderId = 0;
 };
 
 };

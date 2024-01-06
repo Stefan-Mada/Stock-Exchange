@@ -30,6 +30,7 @@ struct LimitPrice {
     bool isEmpty() const;
     Order& getFirstOrder() const;
     int getVolume() const;
+    int getPrice() const;
 
 private:
     int limitPrice;

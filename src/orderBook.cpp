@@ -22,13 +22,15 @@ std::optional<int> OrderBook::addOrder(const Order& order) {
             if(orderPrice >= getBestAsk())
                 return executeOrder(order);
 
+            // TODO: Fix this monstrous code, try to eliminate if/else branch with emplacing
             if(priceToLimitMap.contains(orderPrice)) {
-                auto orderIterator = priceToLimitMap[orderPrice].addOrder(order);
+                auto limitIterator = priceToLimitMap.try_emplace(orderPrice, orderPrice).first;
+                auto orderIterator = limitIterator->second.addOrder(order);
                 idToOrderIteratorMap[orderId] = orderIterator;
             }
             else {
-                buyMap[orderPrice] = {LimitPrice{orderPrice}};
-                idToOrderIteratorMap[orderId] = buyMap[orderPrice].addOrder(order);
+                buyMap.emplace(orderPrice, orderPrice);
+                idToOrderIteratorMap[orderId] = buyMap.at(orderPrice).addOrder(order);
             }
             break;
         }
@@ -37,12 +39,14 @@ std::optional<int> OrderBook::addOrder(const Order& order) {
                 return executeOrder(order);
 
             if(priceToLimitMap.contains(orderPrice)) {
-                auto orderIterator = priceToLimitMap[orderPrice].addOrder(order);
+                auto limitIterator = priceToLimitMap.try_emplace(orderPrice, orderPrice).first;
+                auto orderIterator = limitIterator->second.addOrder(order);
                 idToOrderIteratorMap[orderId] = orderIterator;
+
             }
             else {
-                sellMap[orderPrice] = {LimitPrice{orderPrice}};
-                idToOrderIteratorMap[orderId] = buyMap[orderPrice].addOrder(order);
+                sellMap.emplace(orderPrice, orderPrice);
+                idToOrderIteratorMap[orderId] = sellMap.at(orderPrice).addOrder(order);
             }
             break;
         }
@@ -117,6 +121,8 @@ int OrderBook::executeOrder(const Order& order) {
 
         addOrder(updatedOrder);
     }
+
+    return moneyEarned;
 }
 
 int OrderBook::getVolumeAtLimit(int price) {
