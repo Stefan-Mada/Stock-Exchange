@@ -11,22 +11,34 @@ set(STOCKEXCHANGE_SRCS  src/orderBook.cpp
                         src/order.cpp
                         src/orderExecution.cpp)
 
-# Create actual executable
-add_executable(Stock-Exchange   src/stockExchange.cpp
-                                ${STOCKEXCHANGE_SRCS})
+# Turn sources into a static library for use in testing AND in main executable
+add_library(StockExchangeLib STATIC ${STOCKEXCHANGE_SRCS})
 
-# Set include directory
+# Create actual executable
+add_executable(Stock-Exchange src/stockExchange.cpp)
+
+# Set include directory for main executable
 target_include_directories(Stock-Exchange PRIVATE include)
+
+# Link executable against library
+target_link_libraries(Stock-Exchange PRIVATE StockExchangeLib)
 
 # Have executable force C++20
 target_compile_features(Stock-Exchange PRIVATE cxx_std_20)
+
+
+
+# ============ TESTING ===============
 
 # Set list of all test sources, INCLUDING test main
 set(TEST_SOURCES tests/main.cpp tests/orderBook.test.cpp)
 
 # Make tests executable
-add_executable(tests ${TEST_SOURCES} ${STOCKEXCHANGE_SRCS})
+add_executable(tests ${TEST_SOURCES})
+
+# Do all linking business, same as above really
 target_include_directories(tests PRIVATE include)
+target_link_libraries(tests PRIVATE StockExchangeLib)
 target_compile_features(tests PRIVATE cxx_std_20)
 
 # enable testing functionality

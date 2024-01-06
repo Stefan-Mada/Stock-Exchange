@@ -29,10 +29,6 @@ int Order::getShares() const {
     return shares;
 }
 
-int Order::getEntryTime() const {
-    return entryTime;
-}
-
 int Order::getTimeInForce() const {
     return timeInForce;
 }

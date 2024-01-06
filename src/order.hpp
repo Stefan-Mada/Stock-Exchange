@@ -30,14 +30,13 @@ enum OrderType {
  * 
  */
 struct Order {
-    Order(int orderId, OrderType orderType, int shares, int limitPrice, int entryTime, int timeInForce)
-        : orderId{orderId}, orderType{orderType}, shares{shares}, limitPrice{limitPrice}, entryTime{entryTime}, timeInForce{timeInForce} {}
+    Order(int orderId, OrderType orderType, int shares, int limitPrice, int timeInForce)
+        : orderId{orderId}, orderType{orderType}, shares{shares}, limitPrice{limitPrice}, timeInForce{timeInForce} {}
 
     OrderType getOrderType() const;
     int getLimitPrice() const;
     int getOrderId() const;
     int getShares() const;
-    int getEntryTime() const;
     int getTimeInForce() const;
 
     /**
@@ -58,7 +57,9 @@ private:
     OrderType orderType;
     int shares;
     int limitPrice;
-    int entryTime;
+
+    // TODO: Do this.
+    /// @brief Currently does nothing, but will hopefully in the future be used to remove expired orders
     int timeInForce;
 };
 
