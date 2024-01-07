@@ -16,9 +16,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wshadow")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-arcs -ftest-coverage -fprofile-instr-generate -fcoverage-mapping -fsanitize=address,undefined,leak -fno-sanitize-recover=address,undefined,leak ${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
-
 
 # Set list of all project sources, excluding main file
 set(STOCKEXCHANGE_SRCS  src/orderBook.cpp
@@ -66,39 +65,22 @@ add_test(
 )
 
 # Ensure we have the proper program to run coverage tests
-find_program(kcov kcov)
+find_program(LLVM_COV llvm-cov llvm-cov-14 REQUIRED)
+find_program(LLVM_PROFDATA llvm-profdata llvm-profdata-14 REQUIRED)
+find_program(GENHTML genhtml REQUIRED)
 
-# custom target to run coverage tests
-# KCov doesn't support sanitizers
+# Run boatloads of commands to generate LLVM traces, reports, and then use genHTML to get a prettier version
+# End up with 2 htmls to look over code coverage with
 add_custom_target(coverage ALL 
-    COMMAND kcov --include-path=${CMAKE_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/coverage ${CMAKE_CURRENT_BINARY_DIR}/tests
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/coverage
+    COMMAND ${LLVM_PROFDATA} merge -sparse default.profraw -o tests.profdata
+    COMMAND ${LLVM_COV} show ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/ -show-regions --show-branches=count --show-expansions -format=html > coverage/LLVM-index.html
+    COMMAND ${LLVM_COV} export ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/ -format=lcov > coverage/coverage.lcov
+    COMMAND ${GENHTML} --demangle-cpp -o coverage coverage/coverage.lcov
+    COMMAND ${LLVM_COV} report ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # Make sure tests build before coverage runs
 add_dependencies(coverage tests)
-
-# =========== DEBUG TESTING ==========
-# Debug test target runs coverage tests AND builds with sanitizers, running
-# unit tests again. This is because the code coverage can't run with sanitizers,
-# but this allows full testing of the code
-
-# New executable to re-compile with sanitizers
-# Must add sources again to recompile with sanitizers
-add_executable(sanitizer-tests EXCLUDE_FROM_ALL ${TEST_SOURCES} ${STOCKEXCHANGE_SRCS})
-
-# Do all linking business, same as above really
-target_include_directories(sanitizer-tests PRIVATE include src)
-target_compile_features(sanitizer-tests PRIVATE cxx_std_20)
-
-# Make sure this new target runs with additional NEW compiler options
-# Need to use target_link_libraries here for the sanitizers
-target_compile_options(sanitizer-tests PRIVATE -fsanitize=address,undefined,leak -fno-sanitize-recover=address,undefined,leak)
-target_link_libraries(sanitizer-tests -fsanitize=address,undefined,leak)
-
-# Run new tests
-add_custom_target(debug-tests 
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/sanitizer-tests
-)
-
-# Make this new target depend on code coverage FIRST
-add_dependencies(debug-tests coverage sanitizer-tests)
