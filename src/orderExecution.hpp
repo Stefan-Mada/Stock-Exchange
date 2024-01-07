@@ -31,8 +31,6 @@ struct OrderExecution {
 
     OrderExecution& operator+=(const OrderExecution& rhs);
 
-    void executeOrder(const Order& order);
-
     void executeOrder(const Order& order, int shares);
 
     int getTotalSharesExecuted() const;
@@ -48,6 +46,8 @@ struct OrderExecution {
     const std::optional<std::pair<int, int>>& getPartiallyFulfilledOrder() const;
 
 private:
+    void executeOrder(const Order& order);
+
     /// @brief ID of order that is being executed to start with
     int baseId;
     int moneyExchanged = 0;
