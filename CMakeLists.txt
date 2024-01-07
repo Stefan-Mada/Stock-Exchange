@@ -1,6 +1,7 @@
 # Wonderful CMake file!
 # Builds stock-exchange, tests, and coverage by default
 # Build target "debug-tests" in order to run tests with and without sanitizers on
+# Strictly speaking, not cross platform, but only with regards to testing
 
 cmake_minimum_required(VERSION 3.22)
 project(Stock-Exchange VERSION 1.0 LANGUAGES CXX)
@@ -72,18 +73,28 @@ find_program(GENHTML genhtml REQUIRED)
 # Run boatloads of commands to generate LLVM traces, reports, and then use genHTML to get a prettier version
 # End up with 2 htmls to look over code coverage with
 # Second command is a mystical one to fix issue with "cannot merge previous GCDA file"
-add_custom_target(coverage ALL 
-    COMMAND ${CMAKE_COMMAND} -E rm -rf -- default.profraw tests.profdata
-    COMMAND find . -name "*.gcda" -print0 | xargs -0 rm
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/coverage
-    COMMAND ${LLVM_PROFDATA} merge -sparse default.profraw -o tests.profdata
-    COMMAND ${LLVM_COV} show ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/ -show-regions --show-branches=count --show-expansions -format=html > coverage/LLVM-index.html
-    COMMAND ${LLVM_COV} export ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/ -format=lcov > coverage/coverage.lcov
-    COMMAND ${GENHTML} --demangle-cpp -o coverage coverage/coverage.lcov
-    COMMAND ${LLVM_COV} report ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_custom_target(coverage ALL 
+        COMMAND ${CMAKE_COMMAND} -E rm -rf -- default.profraw tests.profdata
+        COMMAND find . -name "*.gcda" -print0 | xargs -0 rm
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/coverage
+        COMMAND ${LLVM_PROFDATA} merge -sparse default.profraw -o tests.profdata
+        COMMAND ${LLVM_COV} show ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/ -show-regions --show-branches=count --show-expansions -format=html > coverage/LLVM-index.html
+        COMMAND ${LLVM_COV} export ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/ -format=lcov > coverage/coverage.lcov
+        COMMAND ${GENHTML} --demangle-cpp -o coverage coverage/coverage.lcov
+        COMMAND ${LLVM_COV} report ./tests -instr-profile=tests.profdata ${CMAKE_SOURCE_DIR}/src/
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
 
-# Make sure tests build before coverage runs
-add_dependencies(coverage tests)
+    # Make sure tests build before coverage runs
+    add_dependencies(coverage tests)
+else()
+    # Doesn't actually run coverage in release mode, just tests
+    add_custom_command(
+        TARGET tests 
+        POST_BUILD
+        COMMAND ctest --output-on-failure
+    )
+endif()
+
