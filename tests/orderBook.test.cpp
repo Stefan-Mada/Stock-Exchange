@@ -90,5 +90,35 @@ TEST_CASE("Test order cancellation basic") {
     CHECK(orderBook.getTotalVolume() == 20);
 }
 
+TEST_CASE("One order eats up two and then some") {
+    OrderBook orderBook;
+
+    auto sellOrder1 = orderBook.addOrder(sell, 20, 10);
+    auto sellOrder2 = orderBook.addOrder(sell, 30, 10);
+    // 50 shares selling at 10
+
+    CHECK(orderBook.getBestAsk().value() == 10);
+    auto buyOrder = orderBook.addOrder(buy, 60, 11);
+    CHECK(!orderBook.getBestAsk().has_value());
+    // 10 shares buying at 11
+
+    CHECK(orderBook.getTotalVolume() == 50);
+    CHECK(orderBook.getVolumeAtLimit(10) == 50);
+    CHECK(buyOrder.getMoneyExchanged() == 500);
+    CHECK(buyOrder.getTotalSharesExecuted() == 50);
+    CHECK(orderBook.getBestBid().value() == 11);
+
+    auto sellOrder3 = orderBook.addOrder(sell, 10, 11);
+    // Should have no shares left
+
+    CHECK(orderBook.getTotalVolume() == 60);
+    CHECK(orderBook.getVolumeAtLimit(10) == 50);
+    CHECK(orderBook.getVolumeAtLimit(11) == 10);
+    CHECK(sellOrder3.getMoneyExchanged() == 110);
+    CHECK(sellOrder3.getTotalSharesExecuted() == 10);
+    CHECK(!orderBook.getBestBid().has_value());
+    CHECK(!orderBook.getBestAsk().has_value());
+}
+
 
 TEST_SUITE_END();

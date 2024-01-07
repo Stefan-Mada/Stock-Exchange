@@ -21,10 +21,17 @@ OrderExecution OrderBook::addOrder(const Order& order) {
     const auto orderPrice = order.getLimitPrice();
     const auto orderId = order.getOrderId();
     auto& buyOrSellMap = (order.getOrderType() == OrderType::buy) ? buyMap : sellMap;
+    auto& archivedBuyOrSellMap = (order.getOrderType() == OrderType::buy) ? archivedBuyMap : archivedSellMap;
 
     if(isExecutable(order))
         return executeOrder(order);
 
+    // if the limit existed in the past, we need to re-instate it to keep track of volume, etc.
+    if(archivedBuyOrSellMap.contains(orderPrice)) {
+        buyOrSellMap.emplace(orderPrice, archivedBuyOrSellMap.at(orderPrice));
+        archivedBuyOrSellMap.erase(orderPrice);
+    }
+    // Can continue as normal adding to the LimitPrice
     auto [limitPriceIterator, isNewElem] = buyOrSellMap.try_emplace(orderPrice, orderPrice);
     auto orderIterator = limitPriceIterator->second.addOrder(order);
     idToOrderIteratorMap.insert({orderId, orderIterator});
@@ -47,15 +54,8 @@ void OrderBook::cancelOrder(int orderId) {
 
     // Need to erase empty limitPrices here, as gives incorrect info on lowest bids/asks
     // TODO: See if can do better than O(logn) for cancelling orders in empty case
-    if(limitPrice.isEmpty()) {
-        if(removedType == OrderType::buy)
-            buyMap.erase(price);
-        else
-            sellMap.erase(price);
-
-        priceToLimitMap.erase(price);
-    }
-
+    if(limitPrice.isEmpty())
+        removeLimitMap(price, removedType);
 }
 
 OrderExecution OrderBook::executeOrder(const Order& order) {
@@ -66,9 +66,9 @@ OrderExecution OrderBook::executeOrder(const Order& order) {
     OrderExecution totalExec{baseOrderId};
 
     while(sharesLeftToExec > 0 && isExecutable(order)) {
+        OrderType targetLimitType = (order.getOrderType() == OrderType::sell) ? OrderType::buy : OrderType::sell;
         LimitPrice& targetLimit = (order.getOrderType() == OrderType::sell) ? buyMap.begin()->second : (--sellMap.end())->second;
-         
-        sharesLeftToExec = startingShares - totalExec.getTotalSharesExecuted();
+        
         const int sharesToExecInLimit = std::min(sharesLeftToExec, targetLimit.getDepth());
 
         OrderExecution limitExecution = targetLimit.executeNumberOfShares(baseOrderId, sharesToExecInLimit);
@@ -76,7 +76,11 @@ OrderExecution OrderBook::executeOrder(const Order& order) {
         for(const auto fulfilledId : limitExecution.getFulfilledOrderIds())
             idToOrderIteratorMap.erase(fulfilledId);
 
+        if(targetLimit.isEmpty())
+            removeLimitMap(targetLimit.getPrice(), targetLimitType);
+
         totalExec += limitExecution;
+        sharesLeftToExec = startingShares - totalExec.getTotalSharesExecuted();
     }
 
     if(sharesLeftToExec > 0) 
@@ -88,10 +92,15 @@ OrderExecution OrderBook::executeOrder(const Order& order) {
 }
 
 int OrderBook::getVolumeAtLimit(int price) const {
-    if(!priceToLimitMap.contains(price))
-        return 0;
+    int volumeAtLimit = 0;
+    if(priceToLimitMap.contains(price))
+        volumeAtLimit += priceToLimitMap.at(price).getVolume();
+    if(archivedBuyMap.contains(price))
+        volumeAtLimit += archivedBuyMap.at(price).getVolume();
+    if(archivedSellMap.contains(price))
+        volumeAtLimit += archivedSellMap.at(price).getVolume();
 
-    return priceToLimitMap.at(price).getVolume();
+    return volumeAtLimit;
 }
 
 std::optional<int> OrderBook::getBestBid() const {
@@ -125,6 +134,19 @@ bool OrderBook::isExecutable(const Order& order) const {
         return true;
     
     return false;
+}
+
+void OrderBook::removeLimitMap(int price, OrderType orderType) {
+    if(orderType == OrderType::buy) {
+        archivedBuyMap.emplace(price, std::move(priceToLimitMap.at(price)));
+        buyMap.erase(price);
+    }
+    else {
+        archivedSellMap.emplace(price, std::move(priceToLimitMap.at(price)));
+        sellMap.erase(price);
+    }
+
+    priceToLimitMap.erase(price);
 }
 
 };

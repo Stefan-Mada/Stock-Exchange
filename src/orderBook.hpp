@@ -39,9 +39,15 @@ private:
     OrderExecution addOrder(const Order& order);
     OrderExecution executeOrder(const Order& order);
     bool isExecutable(const Order& order) const;
+    void removeLimitMap(int price, OrderType orderType);
 
     std::map<int, LimitPrice> buyMap;
     std::map<int, LimitPrice> sellMap;
+
+    // These 2 below are used when no more orders exist in a LimitPrice,
+    // Necessary in order to keep storing information about volume, etc
+    std::unordered_map<int, LimitPrice> archivedBuyMap;
+    std::unordered_map<int, LimitPrice> archivedSellMap;
 
     std::unordered_map<int, std::list<Order>::iterator> idToOrderIteratorMap;
     
