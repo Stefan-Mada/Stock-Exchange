@@ -227,4 +227,23 @@ TEST_CASE("Final weird case for orderExecution addition") {
     CHECK_NOTHROW(exec1 += exec2);
 }
 
+TEST_CASE("Large test") {
+    OrderBook orderBook;
+    for(int i = 1; i <= 100; ++i) {
+        for(int j = 0; j < 30*i; ++j) {
+            orderBook.addOrder(sell, i, 99+i);
+        }
+    }
+
+    auto buyTheWholeMarket = orderBook.addOrder(buy, 1'000'000'000, 300);
+
+    CHECK_EQ(buyTheWholeMarket.getMoneyExchanged(), 1'769'974'500);
+
+    // 1 1 1 1 x 30 at 100
+    // 2 2 2 2 x 60 at 101
+    // ...
+    // 100 100 100 100 x 3000 at 199
+    // Equals $1,769,974,500 
+}
+
 TEST_SUITE_END();
