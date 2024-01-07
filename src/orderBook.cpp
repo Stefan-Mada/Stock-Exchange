@@ -65,7 +65,7 @@ OrderExecution OrderBook::executeOrder(const Order& order) {
 
     while(sharesLeftToExec > 0 && isExecutable(order)) {
         OrderType targetLimitType = (order.getOrderType() == OrderType::sell) ? OrderType::buy : OrderType::sell;
-        LimitPrice& targetLimit = (order.getOrderType() == OrderType::sell) ? buyMap.begin()->second : (--sellMap.end())->second;
+        LimitPrice& targetLimit = (order.getOrderType() == OrderType::sell) ? (--buyMap.end())->second : sellMap.begin()->second;
         
         const int sharesToExecInLimit = std::min(sharesLeftToExec, targetLimit.getDepth());
 

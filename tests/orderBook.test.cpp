@@ -246,4 +246,32 @@ TEST_CASE("Large test") {
     // Equals $1,769,974,500 
 }
 
+TEST_CASE("ID order test") {
+    // Make sure first entere orders are first to be executed
+    OrderBook orderBook;
+    auto buyOrder1 = orderBook.addOrder(buy, 5, 5);
+    auto buyOrder2 = orderBook.addOrder(buy, 5, 5);
+    auto buyOrder3 = orderBook.addOrder(buy, 5, 4);
+    auto buyOrder4 = orderBook.addOrder(buy, 5, 3);
+    auto buyOrder5 = orderBook.addOrder(buy, 5, 5);
+    auto buyOrder6 = orderBook.addOrder(buy, 5, 4);
+    auto buyOrder7 = orderBook.addOrder(buy, 5, 3);
+
+    auto sellOrder1 = orderBook.addOrder(sell, 5, 3);
+    auto sellOrder2 = orderBook.addOrder(sell, 5, 3);
+    auto sellOrder3 = orderBook.addOrder(sell, 5, 3);
+    auto sellOrder4 = orderBook.addOrder(sell, 5, 3);
+    auto sellOrder5 = orderBook.addOrder(sell, 5, 3);
+    auto sellOrder6 = orderBook.addOrder(sell, 5, 3);
+    auto sellOrder7 = orderBook.addOrder(sell, 5, 3);
+
+    CHECK_EQ(buyOrder1.getBaseId(), sellOrder1.getFulfilledOrderIds().front());
+    CHECK_EQ(buyOrder2.getBaseId(), sellOrder2.getFulfilledOrderIds().front());
+    CHECK_EQ(buyOrder5.getBaseId(), sellOrder3.getFulfilledOrderIds().front());
+    CHECK_EQ(buyOrder3.getBaseId(), sellOrder4.getFulfilledOrderIds().front());
+    CHECK_EQ(buyOrder6.getBaseId(), sellOrder5.getFulfilledOrderIds().front());
+    CHECK_EQ(buyOrder4.getBaseId(), sellOrder6.getFulfilledOrderIds().front());
+    CHECK_EQ(buyOrder7.getBaseId(), sellOrder7.getFulfilledOrderIds().front());
+}
+
 TEST_SUITE_END();
