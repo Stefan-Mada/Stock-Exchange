@@ -10,6 +10,7 @@
  */
 
 #include <stdexcept>
+#include <utility>
 #include "doctest.h"
 #include "orderBook.hpp"
 
@@ -47,7 +48,7 @@ TEST_CASE("Double Execution with no partial execution") {
     CHECK(sellOrder1.getMoneyExchanged() == 20);
     CHECK(sellOrder2.getTotalSharesExecuted() == 5);
 
-    CHECK(!sellOrder1.hasPartialExecution());
+    CHECK(sellOrder1.hasPartialExecution());
     CHECK(!sellOrder2.hasPartialExecution());
 }
 
@@ -140,5 +141,90 @@ TEST_CASE("LimitPrice exceptions") {
     CHECK_THROWS_AS(limitPrice.executeNumberOfShares(1, 20), std::invalid_argument);
 }
 
+TEST_CASE("Check executed order info correct") {
+    OrderBook orderBook;
+    auto sellOrder1 = orderBook.addOrder(sell, 20, 10);
+    auto sellOrder2 = orderBook.addOrder(sell, 30, 10);
+
+    const int baseId = sellOrder1.getBaseId();
+
+    auto buyOrder = orderBook.addOrder(buy, 45, 11);
+
+    CHECK(buyOrder.getFulfilledOrderIds().size() == 1);
+    CHECK(buyOrder.hasPartialExecution());
+
+    CHECK(buyOrder.getPartiallyFulfilledOrder().value() == std::make_pair(baseId + 1, 25));
+    CHECK(buyOrder.getTotalSharesExecuted() == 45);
+    CHECK(buyOrder.getMoneyExchanged() == 450);
+}
+
+TEST_CASE("Check for time in force") {
+    Order order{0, sell, 5, 5, 30};
+    CHECK(order.getTimeInForce() == 30);
+}
+
+TEST_CASE("OrderExecution throwing for invalid addition") {
+    OrderBook orderBook;
+    auto sellOrder1 = orderBook.addOrder(sell, 20, 10);
+    auto sellOrder2 = orderBook.addOrder(sell, 30, 10);
+
+    auto buyOrder1 = orderBook.addOrder(buy, 20, 10);
+    auto buyOrder2 = orderBook.addOrder(buy, 20, 10);
+
+    CHECK_THROWS_AS(buyOrder1 += buyOrder2, std::invalid_argument);
+
+    // Other throw condition requires really trying to do something bad
+    // Practically impossible unless I code something wrong in the logic
+    OrderExecution exec1{5};
+    OrderExecution exec2{5};
+
+    Order order1{6, buy, 7, 10};
+    exec1.executeOrder(order1, 5);
+    exec2.executeOrder(order1, 5);
+    // Now both executions have a partial execution
+    CHECK_THROWS_AS(exec1 += exec2, std::invalid_argument);
+}
+
+TEST_CASE("Fail isExecutable due to price being larger than the best asking value") {
+    OrderBook orderBook;
+    auto sellOrder = orderBook.addOrder(sell, 5, 100);
+    auto buyOrder = orderBook.addOrder(buy, 100, 99);
+
+    CHECK(orderBook.getBestAsk() == 100);
+    CHECK(orderBook.getBestBid() == 99);
+}
+
+TEST_CASE("Cancel order more complexly") {
+    OrderBook orderBook;
+    auto sellOrder = orderBook.addOrder(sell, 5, 100);
+    auto buyOrder = orderBook.addOrder(buy, 6, 101);
+    auto buyOrder2 = orderBook.addOrder(buy, 9, 101);
+    // Here, are 10 for 101, 5 traded
+    orderBook.cancelOrder(buyOrder.getBaseId());
+    // Now are 9 for 101
+    auto buyOrder3 = orderBook.addOrder(buy, 11, 100);
+    auto buyOrder4 = orderBook.addOrder(buy, 1, 99);
+    auto sellOrder2 = orderBook.addOrder(sell, 21, 99);
+
+    CHECK(!orderBook.getBestBid().has_value());
+    CHECK_EQ(orderBook.getTotalVolume(), 26);
+    CHECK_EQ(orderBook.getVolumeAtLimit(100), 16);
+    CHECK_EQ(orderBook.getVolumeAtLimit(101), 9);
+    CHECK_EQ(orderBook.getVolumeAtLimit(99), 1);
+    CHECK_EQ(sellOrder2.getMoneyExchanged(), 2108);
+    CHECK_EQ(sellOrder2.getTotalSharesExecuted(), 21);
+}
+
+TEST_CASE("Final weird case for orderExecution addition") {
+    OrderExecution exec1{5};
+    OrderExecution exec2{5};
+
+    Order order1{6, buy, 7, 10};
+    exec1.executeOrder(order1, 5);
+    exec2.executeOrder(order1, 7);
+    
+    // Doesn't throw because only one of them is a partial order execution
+    CHECK_NOTHROW(exec1 += exec2);
+}
 
 TEST_SUITE_END();

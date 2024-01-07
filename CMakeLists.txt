@@ -71,7 +71,10 @@ find_program(GENHTML genhtml REQUIRED)
 
 # Run boatloads of commands to generate LLVM traces, reports, and then use genHTML to get a prettier version
 # End up with 2 htmls to look over code coverage with
+# Second command is a mystical one to fix issue with "cannot merge previous GCDA file"
 add_custom_target(coverage ALL 
+    COMMAND ${CMAKE_COMMAND} -E rm -rf -- default.profraw tests.profdata
+    COMMAND find . -name "*.gcda" -print0 | xargs -0 rm
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/coverage
     COMMAND ${LLVM_PROFDATA} merge -sparse default.profraw -o tests.profdata

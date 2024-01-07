@@ -26,6 +26,9 @@ OrderExecution& OrderExecution::operator+=(const OrderExecution& rhs) {
     moneyExchanged += rhs.moneyExchanged;
     totalSharesExcecuted += rhs.totalSharesExcecuted;
 
+    if(rhs.partiallyFulfilledOrder)
+        partiallyFulfilledOrder = rhs.partiallyFulfilledOrder;
+
     return *this;
 }
 
