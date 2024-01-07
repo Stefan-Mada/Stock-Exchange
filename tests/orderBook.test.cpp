@@ -9,6 +9,7 @@
  * 
  */
 
+#include <stdexcept>
 #include "doctest.h"
 #include "orderBook.hpp"
 
@@ -90,7 +91,7 @@ TEST_CASE("Test order cancellation basic") {
     CHECK(orderBook.getTotalVolume() == 20);
 }
 
-TEST_CASE("One order eats up two and then some") {
+TEST_CASE("Orders executing past one another, check volume after limit disappears") {
     OrderBook orderBook;
 
     auto sellOrder1 = orderBook.addOrder(sell, 20, 10);
@@ -118,6 +119,25 @@ TEST_CASE("One order eats up two and then some") {
     CHECK(sellOrder3.getTotalSharesExecuted() == 10);
     CHECK(!orderBook.getBestBid().has_value());
     CHECK(!orderBook.getBestAsk().has_value());
+
+    // Try re-instating an old limit
+    auto buyOrder2 = orderBook.addOrder(buy, 15, 11);
+    CHECK(orderBook.getVolumeAtLimit(11) == 10);
+    auto sellOrder4 = orderBook.addOrder(sell, 20, 11);
+    CHECK(orderBook.getVolumeAtLimit(11) == 25);
+    CHECK(orderBook.getBestAsk().value() == 11);
+    // Should have 5 selling at 11
+
+    auto buyOrder3 = orderBook.addOrder(buy, 5, 11);
+    CHECK(!orderBook.getBestBid().has_value());
+    CHECK(!orderBook.getBestAsk().has_value());
+}
+
+TEST_CASE("LimitPrice exceptions") {
+    LimitPrice limitPrice{10};
+    limitPrice.addOrder(Order{0, buy, 10, 10});
+
+    CHECK_THROWS_AS(limitPrice.executeNumberOfShares(1, 20), std::invalid_argument);
 }
 
 

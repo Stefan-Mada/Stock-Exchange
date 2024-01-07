@@ -44,10 +44,9 @@ private:
     std::map<int, LimitPrice> buyMap;
     std::map<int, LimitPrice> sellMap;
 
-    // These 2 below are used when no more orders exist in a LimitPrice,
+    // This is used when no more orders exist in a LimitPrice,
     // Necessary in order to keep storing information about volume, etc
-    std::unordered_map<int, LimitPrice> archivedBuyMap;
-    std::unordered_map<int, LimitPrice> archivedSellMap;
+    std::unordered_map<int, LimitPrice> archivedLimitMaps;
 
     std::unordered_map<int, std::list<Order>::iterator> idToOrderIteratorMap;
     

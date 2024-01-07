@@ -28,7 +28,6 @@ struct LimitPrice {
     std::list<Order>::iterator addOrder(const Order& order);
     OrderType removeOrder(std::list<Order>::const_iterator pos);
     bool isEmpty() const;
-    const Order& getFirstOrder() const;
     int getVolume() const;
     int getPrice() const;
     int getDepth() const;
