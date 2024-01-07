@@ -6,13 +6,22 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# Build options
+option(RUN_COVERAGE "RUN_COVERAGE" OFF)
+option(SANITIZERS "SANITIZERS" OFF)
+
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wshadow")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address,undefined -fno-sanitize-recover=address,undefined ${CMAKE_CXX_FLAGS_DEBUG}")
+
+if(SANITIZERS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined -fno-sanitize-recover=address,undefined")
+endif()
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 ${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Set list of all project sources, excluding main file
@@ -60,10 +69,17 @@ add_test(
     COMMAND $<TARGET_FILE:tests>
 )
 
-# run tests after build
-# add_custom_command(
-#     TARGET tests
-#     POST_BUILD
-#     COMMENT "Run tests after build"
-#     COMMAND ctest --output-on-failure
-# )
+# define coverage command to run tests after build, with coverage information
+# for some reason can't have this run as well as having sanitizers turned on, crashes
+# TODO: Figure that out
+if(RUN_COVERAGE) 
+    # Uses kcov for coverage
+    find_program(kcov kcov REQUIRED)
+
+    add_custom_command(
+        TARGET tests
+        POST_BUILD
+        COMMENT "Run coverage tests after build"
+        COMMAND kcov --include-path=${CMAKE_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/coverage ${CMAKE_CURRENT_BINARY_DIR}/tests
+    )
+endif()
