@@ -16,7 +16,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wshadow")
-
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 ${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
 
@@ -66,9 +65,11 @@ add_test(
     COMMAND $<TARGET_FILE:tests>
 )
 
+# Ensure we have the proper program to run coverage tests
+find_program(kcov kcov)
+
 # custom target to run coverage tests
-# KCov doesn't support sanitizers (of course)
-# So testing should be run twice: once with sanitizers, and once without
+# KCov doesn't support sanitizers
 add_custom_target(coverage ALL 
     COMMAND kcov --include-path=${CMAKE_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/coverage ${CMAKE_CURRENT_BINARY_DIR}/tests
 )
