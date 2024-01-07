@@ -20,9 +20,12 @@ std::list<Order>::iterator LimitPrice::addOrder(const Order& order) {
     return --limitOrders.end();
 }
 
-void LimitPrice::removeOrder(std::list<Order>::const_iterator pos) {
+OrderType LimitPrice::removeOrder(std::list<Order>::const_iterator pos) {
+    OrderType type = pos->getOrderType();
     depth -= pos->getShares();
     limitOrders.erase(pos);
+
+    return type;
 }
 
 bool LimitPrice::isEmpty() const {

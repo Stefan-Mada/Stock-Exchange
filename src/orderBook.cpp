@@ -42,11 +42,20 @@ void OrderBook::cancelOrder(int orderId) {
     const int price = orderIterator->getLimitPrice();
 
     LimitPrice& limitPrice = priceToLimitMap.at(price);
-    limitPrice.removeOrder(orderIterator);
+    OrderType removedType = limitPrice.removeOrder(orderIterator);
     idToOrderIteratorMap.erase(orderId);
 
-    // could check if limitPrice is empty here and delete accordingly,
-    // but would add O(logn) complexity unnecessarily - can just keep empty limitPrices
+    // Need to erase empty limitPrices here, as gives incorrect info on lowest bids/asks
+    // TODO: See if can do better than O(logn) for cancelling orders in empty case
+    if(limitPrice.isEmpty()) {
+        if(removedType == OrderType::buy)
+            buyMap.erase(price);
+        else
+            sellMap.erase(price);
+
+        priceToLimitMap.erase(price);
+    }
+
 }
 
 OrderExecution OrderBook::executeOrder(const Order& order) {
