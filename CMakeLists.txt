@@ -76,7 +76,7 @@ find_program(GENHTML genhtml REQUIRED)
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     add_custom_target(coverage ALL 
         COMMAND ${CMAKE_COMMAND} -E rm -rf -- default.profraw tests.profdata
-        COMMAND find . -name "*.gcda" -print0 | xargs -0 rm
+        COMMAND find . -name "*.gcda" -print0 | xargs -0 rm || true
         COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/coverage
         COMMAND ${LLVM_PROFDATA} merge -sparse default.profraw -o tests.profdata
