@@ -32,10 +32,6 @@ bool LimitPrice::isEmpty() const {
     return depth == 0;
 }
 
-const Order& LimitPrice::getFirstOrder() const {
-    return limitOrders.front();
-}
-
 int LimitPrice::getVolume() const {
     return volume;
 }

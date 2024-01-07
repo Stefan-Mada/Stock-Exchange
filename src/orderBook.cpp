@@ -21,23 +21,21 @@ OrderExecution OrderBook::addOrder(const Order& order) {
     const auto orderPrice = order.getLimitPrice();
     const auto orderId = order.getOrderId();
     auto& buyOrSellMap = (order.getOrderType() == OrderType::buy) ? buyMap : sellMap;
-    auto& archivedBuyOrSellMap = (order.getOrderType() == OrderType::buy) ? archivedBuyMap : archivedSellMap;
 
     if(isExecutable(order))
         return executeOrder(order);
 
     // if the limit existed in the past, we need to re-instate it to keep track of volume, etc.
-    if(archivedBuyOrSellMap.contains(orderPrice)) {
-        buyOrSellMap.emplace(orderPrice, archivedBuyOrSellMap.at(orderPrice));
-        archivedBuyOrSellMap.erase(orderPrice);
+    if(archivedLimitMaps.contains(orderPrice)) {
+        buyOrSellMap.emplace(orderPrice, archivedLimitMaps.at(orderPrice));
+        archivedLimitMaps.erase(orderPrice);
     }
     // Can continue as normal adding to the LimitPrice
     auto [limitPriceIterator, isNewElem] = buyOrSellMap.try_emplace(orderPrice, orderPrice);
     auto orderIterator = limitPriceIterator->second.addOrder(order);
     idToOrderIteratorMap.insert({orderId, orderIterator});
 
-    if(isNewElem)
-        priceToLimitMap.insert({orderPrice, limitPriceIterator->second});
+    priceToLimitMap.insert_or_assign(orderPrice, limitPriceIterator->second);
 
 
     // if order is simply added without executing, return an empty order execution with the ID of the order
@@ -95,10 +93,8 @@ int OrderBook::getVolumeAtLimit(int price) const {
     int volumeAtLimit = 0;
     if(priceToLimitMap.contains(price))
         volumeAtLimit += priceToLimitMap.at(price).getVolume();
-    if(archivedBuyMap.contains(price))
-        volumeAtLimit += archivedBuyMap.at(price).getVolume();
-    if(archivedSellMap.contains(price))
-        volumeAtLimit += archivedSellMap.at(price).getVolume();
+    if(archivedLimitMaps.contains(price))
+        volumeAtLimit += archivedLimitMaps.at(price).getVolume();
 
     return volumeAtLimit;
 }
@@ -138,11 +134,11 @@ bool OrderBook::isExecutable(const Order& order) const {
 
 void OrderBook::removeLimitMap(int price, OrderType orderType) {
     if(orderType == OrderType::buy) {
-        archivedBuyMap.emplace(price, std::move(priceToLimitMap.at(price)));
+        archivedLimitMaps.emplace(price, priceToLimitMap.at(price));
         buyMap.erase(price);
     }
     else {
-        archivedSellMap.emplace(price, std::move(priceToLimitMap.at(price)));
+        archivedLimitMaps.emplace(price, priceToLimitMap.at(price));
         sellMap.erase(price);
     }
 
