@@ -63,4 +63,32 @@ TEST_CASE("Test empty best bid/asks") {
     CHECK(orderBook.getBestBid().value() == 2);
 }
 
+TEST_CASE("Test order cancellation basic") {
+    OrderBook orderBook;
+
+    auto buyOrder = orderBook.addOrder(buy, 100, 400);
+    int orderId = buyOrder.getBaseId();
+
+    CHECK(orderBook.getBestBid().value() == 400);
+    orderBook.cancelOrder(orderId);
+    CHECK(!orderBook.getBestBid().has_value());
+
+    auto sellOrder = orderBook.addOrder(sell, 100, 405);
+    buyOrder = orderBook.addOrder(buy, 20, 410);
+
+    CHECK(orderBook.getTotalVolume() == 20);
+    CHECK(orderBook.getVolumeAtLimit(405) == 20);
+    CHECK(buyOrder.getMoneyExchanged() == 8100);
+    CHECK(buyOrder.getTotalSharesExecuted() == 20);
+
+    CHECK(orderBook.getBestAsk().value() == 405);
+    orderBook.cancelOrder(sellOrder.getBaseId());
+    buyOrder = orderBook.addOrder(buy, 20, 410);
+    CHECK(!orderBook.getBestAsk().has_value());
+
+    CHECK(buyOrder.getTotalSharesExecuted() == 0);
+    CHECK(orderBook.getTotalVolume() == 20);
+}
+
+
 TEST_SUITE_END();
