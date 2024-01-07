@@ -36,7 +36,7 @@ int Order::getTimeInForce() const {
 OrderExecution Order::execute(int baseOrderId, int numShares) {
     OrderExecution orderExecution{baseOrderId};
     orderExecution.executeOrder(*this, numShares);
-    shares = std::min(0, shares - numShares); // either 0 for full execution, or a partial amount remaining
+    shares = std::max(0, shares - numShares); // either 0 for full execution, or a partial amount remaining
 
     return orderExecution;
 }

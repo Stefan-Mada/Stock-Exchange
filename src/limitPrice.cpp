@@ -62,6 +62,7 @@ OrderExecution LimitPrice::executeNumberOfShares(int baseOrderId, int numShares)
     }
 
     volume += totalOrderExecution.getTotalSharesExecuted();
+    depth -= totalOrderExecution.getTotalSharesExecuted();
 
     return totalOrderExecution;
 }
