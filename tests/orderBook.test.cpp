@@ -9,10 +9,10 @@
  * 
  */
 
+#include "orderBook.hpp"
+#include "doctest.h"
 #include <stdexcept>
 #include <utility>
-#include "doctest.h"
-#include "orderBook.hpp"
 
 using namespace Exchange;
 using enum OrderType;

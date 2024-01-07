@@ -13,11 +13,11 @@
 
 namespace Exchange {
 
-OrderExecution OrderBook::addOrder(OrderType orderType, int shares, int limitPrice, int timeInForce) {
+auto OrderBook::addOrder(OrderType orderType, int shares, int limitPrice, int timeInForce) -> OrderExecution {
     return addOrder(Order{currentOrderId++, orderType, shares, limitPrice, timeInForce});
 }
 
-OrderExecution OrderBook::addOrder(const Order& order) {
+auto OrderBook::addOrder(const Order& order) -> OrderExecution {
     const auto orderPrice = order.getLimitPrice();
     const auto orderId = order.getOrderId();
     auto& buyOrSellMap = (order.getOrderType() == OrderType::buy) ? buyMap : sellMap;
@@ -39,7 +39,7 @@ OrderExecution OrderBook::addOrder(const Order& order) {
 
 
     // if order is simply added without executing, return an empty order execution with the ID of the order
-    return OrderExecution(order.getOrderId());
+    return {order.getOrderId()};
 }
 
 void OrderBook::cancelOrder(int orderId) {
@@ -56,7 +56,7 @@ void OrderBook::cancelOrder(int orderId) {
         removeLimitMap(price, removedType);
 }
 
-OrderExecution OrderBook::executeOrder(const Order& order) {
+auto OrderBook::executeOrder(const Order& order) -> OrderExecution {
     const int startingShares = order.getShares();
     const int baseOrderId = order.getOrderId();
     int sharesLeftToExec = startingShares;
@@ -89,7 +89,7 @@ OrderExecution OrderBook::executeOrder(const Order& order) {
     return totalExec;
 }
 
-int OrderBook::getVolumeAtLimit(int price) const {
+auto OrderBook::getVolumeAtLimit(int price) const -> int {
     int volumeAtLimit = 0;
     if(priceToLimitMap.contains(price))
         volumeAtLimit += priceToLimitMap.at(price).getVolume();
@@ -99,25 +99,25 @@ int OrderBook::getVolumeAtLimit(int price) const {
     return volumeAtLimit;
 }
 
-std::optional<int> OrderBook::getBestBid() const {
+auto OrderBook::getBestBid() const -> std::optional<int> {
     if(buyMap.empty())
         return {};
 
     return std::prev(buyMap.end())->second.getPrice();
 }
 
-std::optional<int> OrderBook::getBestAsk() const {
+auto OrderBook::getBestAsk() const -> std::optional<int> {
     if(sellMap.empty())
         return {};
 
     return sellMap.begin()->second.getPrice();
 }
 
-int OrderBook::getTotalVolume() const {
+auto OrderBook::getTotalVolume() const -> int {
     return totalVolume;
 }
 
-bool OrderBook::isExecutable(const Order& order) const {
+auto OrderBook::isExecutable(const Order& order) const -> bool {
     const auto orderType = order.getOrderType();
     const auto price = order.getLimitPrice();
 
@@ -126,7 +126,7 @@ bool OrderBook::isExecutable(const Order& order) const {
 
     if(orderType == OrderType::buy && bestAsk && price >= bestAsk.value())
         return true;
-    else if(orderType == OrderType::sell && bestBid && price <= bestBid)
+    if(orderType == OrderType::sell && bestBid && price <= bestBid)
         return true;
     
     return false;
@@ -145,4 +145,4 @@ void OrderBook::removeLimitMap(int price, OrderType orderType) {
     priceToLimitMap.erase(price);
 }
 
-};
+}; // namespace Exchange

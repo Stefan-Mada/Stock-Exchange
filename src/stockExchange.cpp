@@ -11,7 +11,4 @@
 
 #include <iostream>
 
-
-int main() {
-    std::cout << "Hello world!\n";
-}
+auto main() -> int { std::cout << "Hello world!\n"; }

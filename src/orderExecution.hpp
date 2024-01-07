@@ -12,9 +12,9 @@
 #ifndef ORDEREXECUTION_HPP
 #define ORDEREXECUTION_HPP
 
-#include <vector>
 #include <optional>
 #include <utility>
+#include <vector>
 
 namespace Exchange {
 
@@ -29,23 +29,24 @@ struct Order;
 struct OrderExecution {
     OrderExecution(int baseId) : baseId{baseId} {}
 
-    OrderExecution& operator+=(const OrderExecution& rhs);
+    auto operator+=(const OrderExecution &rhs) -> OrderExecution &;
 
     void executeOrder(const Order& order, int shares);
 
-    int getTotalSharesExecuted() const;
+    [[nodiscard]] auto getTotalSharesExecuted() const -> int;
 
-    bool hasPartialExecution() const;
+    [[nodiscard]] auto hasPartialExecution() const -> bool;
 
-    int getBaseId() const;
+    [[nodiscard]] auto getBaseId() const -> int;
 
-    int getMoneyExchanged() const;
+    [[nodiscard]] auto getMoneyExchanged() const -> int;
 
-    const std::vector<int>& getFulfilledOrderIds() const;
+    [[nodiscard]] auto getFulfilledOrderIds() const -> const std::vector<int> &;
 
-    const std::optional<std::pair<int, int>>& getPartiallyFulfilledOrder() const;
+    [[nodiscard]] auto getPartiallyFulfilledOrder() const
+        -> const std::optional<std::pair<int, int>> &;
 
-private:
+  private:
     void executeOrder(const Order& order);
 
     /// @brief ID of order that is being executed to start with
@@ -58,6 +59,6 @@ private:
     std::optional<std::pair<int, int>> partiallyFulfilledOrder;
 };
 
-}
+} // namespace Exchange
 
 #endif

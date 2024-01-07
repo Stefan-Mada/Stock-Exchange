@@ -9,61 +9,56 @@
  * 
  */
 
-#include <stdexcept>
 #include "limitPrice.hpp"
+#include <stdexcept>
 
 namespace Exchange {
 
-std::list<Order>::iterator LimitPrice::addOrder(const Order& order) {
-    limitOrders.emplace_back(order);
-    depth += order.getShares();
-    return --limitOrders.end();
+auto LimitPrice::addOrder(const Order &order) -> std::list<Order>::iterator {
+  limitOrders.emplace_back(order);
+  depth += order.getShares();
+  return --limitOrders.end();
 }
 
-OrderType LimitPrice::removeOrder(std::list<Order>::const_iterator pos) {
-    OrderType type = pos->getOrderType();
-    depth -= pos->getShares();
-    limitOrders.erase(pos);
+auto LimitPrice::removeOrder(std::list<Order>::const_iterator pos)
+    -> OrderType {
+  OrderType type = pos->getOrderType();
+  depth -= pos->getShares();
+  limitOrders.erase(pos);
 
-    return type;
+  return type;
 }
 
-bool LimitPrice::isEmpty() const {
-    return depth == 0;
+auto LimitPrice::isEmpty() const -> bool { return depth == 0; }
+
+auto LimitPrice::getVolume() const -> int { return volume; }
+
+auto LimitPrice::getPrice() const -> int { return limitPrice; }
+
+auto LimitPrice::getDepth() const -> int { return depth; }
+
+auto LimitPrice::executeNumberOfShares(int baseOrderId, int numShares)
+    -> OrderExecution {
+  if (numShares > depth)
+    throw std::invalid_argument(
+        "Can't execute more shares in LimitPrice than exist in depth");
+
+  OrderExecution totalOrderExecution(baseOrderId);
+
+  while (numShares > 0) {
+    Order &frontOrder = limitOrders.front();
+    OrderExecution firstOrderExec = frontOrder.execute(baseOrderId, numShares);
+    numShares -= firstOrderExec.getTotalSharesExecuted();
+    totalOrderExecution += firstOrderExec;
+
+    if (frontOrder.getShares() == 0)
+      limitOrders.pop_front();
+  }
+
+  volume += totalOrderExecution.getTotalSharesExecuted();
+  depth -= totalOrderExecution.getTotalSharesExecuted();
+
+  return totalOrderExecution;
 }
 
-int LimitPrice::getVolume() const {
-    return volume;
-}
-
-int LimitPrice::getPrice() const {
-    return limitPrice;
-}
-
-int LimitPrice::getDepth() const {
-    return depth;
-}
-
-OrderExecution LimitPrice::executeNumberOfShares(int baseOrderId, int numShares) {
-    if(numShares > depth)
-        throw std::invalid_argument("Can't execute more shares in LimitPrice than exist in depth");
-
-    OrderExecution totalOrderExecution(baseOrderId);
-
-    while(numShares > 0) {
-        Order& frontOrder = limitOrders.front();
-        OrderExecution firstOrderExec = frontOrder.execute(baseOrderId, numShares);
-        numShares -= firstOrderExec.getTotalSharesExecuted();
-        totalOrderExecution += firstOrderExec;
-
-        if(frontOrder.getShares() == 0)
-            limitOrders.pop_front();
-    }
-
-    volume += totalOrderExecution.getTotalSharesExecuted();
-    depth -= totalOrderExecution.getTotalSharesExecuted();
-
-    return totalOrderExecution;
-}
-
-}
+} // namespace Exchange
