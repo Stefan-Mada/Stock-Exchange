@@ -12,10 +12,10 @@
 #ifndef ORDERBOOK_HPP
 #define ORDERBOOK_HPP
 
+#include "limitPrice.hpp"
 #include <map>
 #include <optional>
 #include <unordered_map>
-#include "limitPrice.hpp"
 
 namespace Exchange {
 
@@ -28,17 +28,18 @@ namespace Exchange {
 struct OrderBook {
     OrderBook() = default;
 
-    OrderExecution addOrder(OrderType orderType, int shares, int limitPrice, int timeInForce = 0);
+    auto addOrder(OrderType orderType, int shares, int limitPrice,
+                  int timeInForce = 0) -> OrderExecution;
     void cancelOrder(int orderId);
-    int getVolumeAtLimit(int price) const;
-    std::optional<int> getBestBid() const;
-    std::optional<int> getBestAsk() const;
-    int getTotalVolume() const;
+    auto getVolumeAtLimit(int price) const -> int;
+    auto getBestBid() const -> std::optional<int>;
+    auto getBestAsk() const -> std::optional<int>;
+    auto getTotalVolume() const -> int;
 
-private:
-    OrderExecution addOrder(const Order& order);
-    OrderExecution executeOrder(const Order& order);
-    bool isExecutable(const Order& order) const;
+  private:
+    auto addOrder(const Order &order) -> OrderExecution;
+    auto executeOrder(const Order &order) -> OrderExecution;
+    auto isExecutable(const Order &order) const -> bool;
     void removeLimitMap(int price, OrderType orderType);
 
     std::map<int, LimitPrice> buyMap;
@@ -57,6 +58,6 @@ private:
     int currentOrderId = 0;
 };
 
-};
+} // namespace Exchange
 
 #endif

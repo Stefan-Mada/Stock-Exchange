@@ -12,8 +12,8 @@
 #ifndef LIMITPRICE_HPP
 #define LIMITPRICE_HPP
 
-#include <list>
 #include "order.hpp"
+#include <list>
 
 namespace Exchange {
 
@@ -24,13 +24,12 @@ namespace Exchange {
 struct LimitPrice {
     LimitPrice(int limitPrice) : limitPrice{limitPrice} {}
 
-
-    std::list<Order>::iterator addOrder(const Order& order);
-    OrderType removeOrder(std::list<Order>::const_iterator pos);
-    bool isEmpty() const;
-    int getVolume() const;
-    int getPrice() const;
-    int getDepth() const;
+    auto addOrder(const Order &order) -> std::list<Order>::iterator;
+    auto removeOrder(std::list<Order>::const_iterator pos) -> OrderType;
+    [[nodiscard]] auto isEmpty() const -> bool;
+    [[nodiscard]] auto getVolume() const -> int;
+    [[nodiscard]] auto getPrice() const -> int;
+    [[nodiscard]] auto getDepth() const -> int;
 
     /**
      * @brief Will execute a certain number of shares at this price, modifying orders, and deleting fully executed orders.
@@ -40,15 +39,16 @@ struct LimitPrice {
      * @return OrderExecution object with shares executed information
      * @warning Will not accept more shares than exist depth in the limit
      */
-    OrderExecution executeNumberOfShares(int baseOrderId, int numShares);
+    auto executeNumberOfShares(int baseOrderId, int numShares)
+        -> OrderExecution;
 
-private:
+  private:
     int limitPrice;
     int depth = 0;
     int volume = 0;
     std::list<Order> limitOrders;
 };
 
-};
+} // namespace Exchange
 
 #endif

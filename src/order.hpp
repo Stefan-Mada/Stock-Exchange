@@ -33,11 +33,11 @@ struct Order {
     Order(int orderId, OrderType orderType, int shares, int limitPrice, int timeInForce = 0)
         : orderId{orderId}, orderType{orderType}, shares{shares}, limitPrice{limitPrice}, timeInForce{timeInForce} {}
 
-    OrderType getOrderType() const;
-    int getLimitPrice() const;
-    int getOrderId() const;
-    int getShares() const;
-    int getTimeInForce() const;
+    [[nodiscard]] auto getOrderType() const -> OrderType;
+    [[nodiscard]] auto getLimitPrice() const -> int;
+    [[nodiscard]] auto getOrderId() const -> int;
+    [[nodiscard]] auto getShares() const -> int;
+    [[nodiscard]] auto getTimeInForce() const -> int;
 
     /**
      * @brief Fills some or all of the shares of this order. Modifies this order object.
@@ -46,12 +46,12 @@ struct Order {
      * @param numShares Number of shares executed
      * @return Order Execution with this order fulfilled, partially or fully
      */
-    OrderExecution execute(int baseOrderId, int numShares);
+    auto execute(int baseOrderId, int numShares) -> OrderExecution;
 
-    Order copyWithNewShareCount(const int newShares) const;
+    [[nodiscard]] auto copyWithNewShareCount(const int newShares) const
+        -> Order;
 
-
-private:
+  private:
     int orderId;
     OrderType orderType;
     int shares;
@@ -62,6 +62,6 @@ private:
     int timeInForce;
 };
 
-};
+} // namespace Exchange
 
 #endif

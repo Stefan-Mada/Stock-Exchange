@@ -9,27 +9,31 @@
  * 
  */
 
-#include <stdexcept>
 #include "orderExecution.hpp"
 #include "order.hpp"
+#include <stdexcept>
 
 namespace Exchange {
 
-OrderExecution& OrderExecution::operator+=(const OrderExecution& rhs) {
-    if(baseId != rhs.baseId)
-        throw std::invalid_argument("BaseID of added OrderExecutions must be equal");
-    if(partiallyFulfilledOrder && rhs.partiallyFulfilledOrder)
-        throw std::invalid_argument("2 added OrderExecutions can't both have partially fulfilled orders");
+auto OrderExecution::operator+=(const OrderExecution &rhs) -> OrderExecution & {
+  if (baseId != rhs.baseId)
+    throw std::invalid_argument(
+        "BaseID of added OrderExecutions must be equal");
+  if (partiallyFulfilledOrder && rhs.partiallyFulfilledOrder)
+    throw std::invalid_argument(
+        "2 added OrderExecutions can't both have partially fulfilled orders");
 
-    fulfilledOrderIds.insert(fulfilledOrderIds.end(), rhs.fulfilledOrderIds.begin(), rhs.fulfilledOrderIds.end());
+  fulfilledOrderIds.insert(fulfilledOrderIds.end(),
+                           rhs.fulfilledOrderIds.begin(),
+                           rhs.fulfilledOrderIds.end());
 
-    moneyExchanged += rhs.moneyExchanged;
-    totalSharesExcecuted += rhs.totalSharesExcecuted;
+  moneyExchanged += rhs.moneyExchanged;
+  totalSharesExcecuted += rhs.totalSharesExcecuted;
 
-    if(rhs.partiallyFulfilledOrder)
-        partiallyFulfilledOrder = rhs.partiallyFulfilledOrder;
+  if (rhs.partiallyFulfilledOrder)
+    partiallyFulfilledOrder = rhs.partiallyFulfilledOrder;
 
-    return *this;
+  return *this;
 }
 
 void OrderExecution::executeOrder(const Order& order) {
@@ -48,30 +52,25 @@ void OrderExecution::executeOrder(const Order& order, int shares) {
     }
 }
 
-int OrderExecution::getTotalSharesExecuted() const {
-    return totalSharesExcecuted;
+auto OrderExecution::getTotalSharesExecuted() const -> int {
+  return totalSharesExcecuted;
 }
 
-bool OrderExecution::hasPartialExecution() const {
-    return partiallyFulfilledOrder.has_value();
+auto OrderExecution::hasPartialExecution() const -> bool {
+  return partiallyFulfilledOrder.has_value();
 }
 
-int OrderExecution::getBaseId() const {
-    return baseId;
+auto OrderExecution::getBaseId() const -> int { return baseId; }
+
+auto OrderExecution::getMoneyExchanged() const -> int { return moneyExchanged; }
+
+auto OrderExecution::getFulfilledOrderIds() const -> const std::vector<int> & {
+  return fulfilledOrderIds;
 }
 
-int OrderExecution::getMoneyExchanged() const {
-    return moneyExchanged;
+auto OrderExecution::getPartiallyFulfilledOrder() const
+    -> const std::optional<std::pair<int, int>> & {
+  return partiallyFulfilledOrder;
 }
 
-const std::vector<int>& OrderExecution::getFulfilledOrderIds() const {
-    return fulfilledOrderIds;
-}
-
-const std::optional<std::pair<int, int>>& OrderExecution::getPartiallyFulfilledOrder() const {
-    return partiallyFulfilledOrder;
-}
-
-
-
-}
+} // namespace Exchange
