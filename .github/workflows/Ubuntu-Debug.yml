@@ -51,7 +51,7 @@ jobs:
     - name: Pass 95% Code Coverage
       uses: terencetcf/github-actions-lcov-minimum-coverage-checker@v1
       with:
-        coverage-file: ${{github.workspace}}/build/coverage/coverage.lcov
+        coverage-file: build/coverage/coverage.lcov
         minimum-coverage: 95
 
     # TODO: Add docs building in here
