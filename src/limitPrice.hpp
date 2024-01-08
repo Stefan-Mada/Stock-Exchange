@@ -22,7 +22,7 @@ namespace Exchange {
  * 
  */
 struct LimitPrice {
-    LimitPrice(int limitPrice) : limitPrice{limitPrice} {}
+    explicit LimitPrice(int limitPrice) : limitPrice{limitPrice} {}
 
     auto addOrder(const Order &order) -> std::list<Order>::iterator;
     auto removeOrder(std::list<Order>::const_iterator pos) -> OrderType;

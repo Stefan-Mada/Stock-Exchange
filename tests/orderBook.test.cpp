@@ -58,8 +58,8 @@ TEST_CASE("Test empty best bid/asks") {
     CHECK(!orderBook.getBestAsk().has_value());
     CHECK(!orderBook.getBestBid().has_value());
 
-    auto buyOrder = orderBook.addOrder(buy, 5, 2);
-    auto sellOrder = orderBook.addOrder(sell, 5, 5);
+    orderBook.addOrder(buy, 5, 2);
+    orderBook.addOrder(sell, 5, 5);
 
     CHECK(orderBook.getBestAsk().value() == 5);
     CHECK(orderBook.getBestBid().value() == 2);
@@ -95,8 +95,8 @@ TEST_CASE("Test order cancellation basic") {
 TEST_CASE("Orders executing past one another, check volume after limit disappears") {
     OrderBook orderBook;
 
-    auto sellOrder1 = orderBook.addOrder(sell, 20, 10);
-    auto sellOrder2 = orderBook.addOrder(sell, 30, 10);
+    orderBook.addOrder(sell, 20, 10);
+    orderBook.addOrder(sell, 30, 10);
     // 50 shares selling at 10
 
     CHECK(orderBook.getBestAsk().value() == 10);
@@ -122,14 +122,14 @@ TEST_CASE("Orders executing past one another, check volume after limit disappear
     CHECK(!orderBook.getBestAsk().has_value());
 
     // Try re-instating an old limit
-    auto buyOrder2 = orderBook.addOrder(buy, 15, 11);
+    orderBook.addOrder(buy, 15, 11);
     CHECK(orderBook.getVolumeAtLimit(11) == 10);
-    auto sellOrder4 = orderBook.addOrder(sell, 20, 11);
+    orderBook.addOrder(sell, 20, 11);
     CHECK(orderBook.getVolumeAtLimit(11) == 25);
     CHECK(orderBook.getBestAsk().value() == 11);
     // Should have 5 selling at 11
 
-    auto buyOrder3 = orderBook.addOrder(buy, 5, 11);
+    orderBook.addOrder(buy, 5, 11);
     CHECK(!orderBook.getBestBid().has_value());
     CHECK(!orderBook.getBestAsk().has_value());
 }
@@ -144,7 +144,7 @@ TEST_CASE("LimitPrice exceptions") {
 TEST_CASE("Check executed order info correct") {
     OrderBook orderBook;
     auto sellOrder1 = orderBook.addOrder(sell, 20, 10);
-    auto sellOrder2 = orderBook.addOrder(sell, 30, 10);
+    orderBook.addOrder(sell, 30, 10);
 
     const int baseId = sellOrder1.getBaseId();
 
@@ -165,8 +165,8 @@ TEST_CASE("Check for time in force") {
 
 TEST_CASE("OrderExecution throwing for invalid addition") {
     OrderBook orderBook;
-    auto sellOrder1 = orderBook.addOrder(sell, 20, 10);
-    auto sellOrder2 = orderBook.addOrder(sell, 30, 10);
+    orderBook.addOrder(sell, 20, 10);
+    orderBook.addOrder(sell, 30, 10);
 
     auto buyOrder1 = orderBook.addOrder(buy, 20, 10);
     auto buyOrder2 = orderBook.addOrder(buy, 20, 10);
@@ -187,8 +187,8 @@ TEST_CASE("OrderExecution throwing for invalid addition") {
 
 TEST_CASE("Fail isExecutable due to price being larger than the best asking value") {
     OrderBook orderBook;
-    auto sellOrder = orderBook.addOrder(sell, 5, 100);
-    auto buyOrder = orderBook.addOrder(buy, 100, 99);
+    orderBook.addOrder(sell, 5, 100);
+    orderBook.addOrder(buy, 100, 99);
 
     CHECK(orderBook.getBestAsk() == 100);
     CHECK(orderBook.getBestBid() == 99);
@@ -196,14 +196,14 @@ TEST_CASE("Fail isExecutable due to price being larger than the best asking valu
 
 TEST_CASE("Cancel order more complexly") {
     OrderBook orderBook;
-    auto sellOrder = orderBook.addOrder(sell, 5, 100);
+    orderBook.addOrder(sell, 5, 100);
     auto buyOrder = orderBook.addOrder(buy, 6, 101);
-    auto buyOrder2 = orderBook.addOrder(buy, 9, 101);
+    orderBook.addOrder(buy, 9, 101);
     // Here, are 10 for 101, 5 traded
     orderBook.cancelOrder(buyOrder.getBaseId());
     // Now are 9 for 101
-    auto buyOrder3 = orderBook.addOrder(buy, 11, 100);
-    auto buyOrder4 = orderBook.addOrder(buy, 1, 99);
+    orderBook.addOrder(buy, 11, 100);
+    orderBook.addOrder(buy, 1, 99);
     auto sellOrder2 = orderBook.addOrder(sell, 21, 99);
 
     CHECK(!orderBook.getBestBid().has_value());

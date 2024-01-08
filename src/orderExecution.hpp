@@ -27,7 +27,7 @@ struct Order;
  * 
  */
 struct OrderExecution {
-    OrderExecution(int baseId) : baseId{baseId} {}
+    explicit OrderExecution(int baseId) : baseId{baseId} {}
 
     auto operator+=(const OrderExecution &rhs) -> OrderExecution &;
 

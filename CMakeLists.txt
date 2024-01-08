@@ -20,8 +20,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wshado
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-arcs -ftest-coverage -fprofile-instr-generate -fcoverage-mapping -fsanitize=address,undefined,leak -fno-sanitize-recover=address,undefined,leak ${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
 
+# Make sure we have linter
+find_program(CLANG_TIDY clang-tidy clang-tidy-14 REQUIRED)
+
 # Set the linter settings here
-set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy;--use-color;--header-filter=.*,-doctest.h;--checks=-llvm-header-guard")
+set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY};--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy;--use-color;--header-filter=.*,-doctest.h;--checks=-llvm-header-guard")
 
 # Set list of all project sources, excluding main file
 set(STOCKEXCHANGE_SRCS  src/orderBook.cpp
@@ -68,6 +71,17 @@ add_test(
     COMMAND $<TARGET_FILE:tests>
 )
 
+# Make sure we have cppcheck
+find_program(CPPCHECK cppcheck REQUIRED)
+
+# Now run another code analyzer before linking the tester
+add_custom_target(cppcheck ALL
+    COMMAND ${CPPCHECK} --enable=all ${CMAKE_SOURCE_DIR}/src/* ${CMAKE_SOURCE_DIR}/tests/* --suppress=missingInclude --error-exitcode=1
+)
+
+# Make sure only runs if tests and main executable have built
+add_dependencies(cppcheck tests Stock-Exchange)
+
 # Ensure we have the proper program to run coverage tests
 find_program(LLVM_COV llvm-cov llvm-cov-14 REQUIRED)
 find_program(LLVM_PROFDATA llvm-profdata llvm-profdata-14 REQUIRED)
@@ -101,3 +115,11 @@ else()
     )
 endif()
 
+
+# ========== Documentation =============
+find_program(DOXYGEN doxygen)
+
+add_custom_target(docs
+    COMMAND ${DOXYGEN} Doxyfile
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
