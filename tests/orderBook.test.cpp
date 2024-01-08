@@ -274,4 +274,10 @@ TEST_CASE("ID order test") {
     CHECK_EQ(buyOrder7.getBaseId(), sellOrder7.getFulfilledOrderIds().front());
 }
 
+TEST_CASE("LimitPrice addOrder exception") {
+    LimitPrice limitPrice{100};
+    Order order1{1, buy, 5, 101};
+    CHECK_THROWS_AS(limitPrice.addOrder(order1), std::invalid_argument);
+}
+
 TEST_SUITE_END();

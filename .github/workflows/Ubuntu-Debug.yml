@@ -54,8 +54,6 @@ jobs:
         coverage-file: build/coverage/coverage.lcov
         minimum-coverage: 95
 
-    # TODO: Add docs building in here
-
     - name: Build documentation, all members commented
     run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target=docs
 

@@ -11,4 +11,9 @@
 
 #include <iostream>
 
+/**
+ * @brief Main entry point of program, currently unused
+ * 
+ * @return 0 if exited successfully, non-zero otherwise
+ */
 auto main() -> int { std::cout << "Hello world!\n"; }
