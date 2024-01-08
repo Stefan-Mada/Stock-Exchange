@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request: # Just to test if works for now
+    branches: [ "main" ]
+
 
 jobs:
   deploy:
