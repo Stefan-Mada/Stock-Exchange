@@ -39,7 +39,7 @@ auto OrderBook::addOrder(const Order& order) -> OrderExecution {
 
 
     // if order is simply added without executing, return an empty order execution with the ID of the order
-    return {order.getOrderId()};
+    return OrderExecution{order.getOrderId()};
 }
 
 void OrderBook::cancelOrder(int orderId) {
