@@ -56,5 +56,8 @@ jobs:
 
     # TODO: Add docs building in here
 
+    - name: Build documentation, all members commented
+    run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target=docs
+
     env:
       CMAKE_CXX_COMPILER: clang++
