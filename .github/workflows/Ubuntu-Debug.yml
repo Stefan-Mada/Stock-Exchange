@@ -55,7 +55,7 @@ jobs:
         minimum-coverage: 95
 
     - name: Build documentation, all members commented
-    run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target=docs
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target=docs
 
     env:
       CMAKE_CXX_COMPILER: clang++
