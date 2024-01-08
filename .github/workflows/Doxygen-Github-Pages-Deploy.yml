@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request: # Just to test if works for now
-    branches: [ "main" ]
 
 
 jobs:
@@ -15,3 +13,4 @@ jobs:
       - uses: DenverCoder1/doxygen-github-pages-action@v1.3.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: documentation
