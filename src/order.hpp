@@ -30,13 +30,51 @@ enum OrderType {
  * 
  */
 struct Order {
+    /**
+     * @brief Construct a new Order object
+     * 
+     * @param orderId       Unique id of order
+     * @param orderType     Buy or sell
+     * @param shares        Number of shares in order
+     * @param limitPrice    Price for order
+     * @param timeInForce   Time the order is valid for
+     */
     Order(int orderId, OrderType orderType, int shares, int limitPrice, int timeInForce = 0)
         : orderId{orderId}, orderType{orderType}, shares{shares}, limitPrice{limitPrice}, timeInForce{timeInForce} {}
 
+    /**
+     * @brief Get the type of order
+     * 
+     * @return OrderType (buy or sell)
+     */
     [[nodiscard]] auto getOrderType() const -> OrderType;
+
+    /**
+     * @brief Get the limit price of this order
+     * 
+     * @return Order's price
+     */
     [[nodiscard]] auto getLimitPrice() const -> int;
+
+    /**
+     * @brief Get the id of order
+     * 
+     * @return Order's id
+     */
     [[nodiscard]] auto getOrderId() const -> int;
+
+    /**
+     * @brief Get the number of shares in the order
+     * 
+     * @return Number of shares
+     */
     [[nodiscard]] auto getShares() const -> int;
+
+    /**
+     * @brief Get the time in force of this order
+     * TODO: Make time in force a meaningful number
+     * @return Time in force
+     */
     [[nodiscard]] auto getTimeInForce() const -> int;
 
     /**
@@ -44,10 +82,16 @@ struct Order {
      * 
      * @param baseOrderId The base order that is being fulfilled by this order
      * @param numShares Number of shares executed
-     * @return Order Execution with this order fulfilled, partially or fully
+     * @return OrderExecution with this order fulfilled, partially or fully
      */
     auto execute(int baseOrderId, int numShares) -> OrderExecution;
 
+    /**
+     * @brief Copy this Order object, but set a new sharecount in the new Order
+     * 
+     * @param newShares Number of shares to set in copied Order
+     * @return New Order
+     */
     [[nodiscard]] auto copyWithNewShareCount(const int newShares) const
         -> Order;
 

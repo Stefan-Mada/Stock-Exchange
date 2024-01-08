@@ -15,6 +15,9 @@
 namespace Exchange {
 
 auto LimitPrice::addOrder(const Order &order) -> std::list<Order>::iterator {
+  if(order.getLimitPrice() != limitPrice)
+    throw std::invalid_argument("Tried adding order with differing limitPrice to limitPrice object");
+
   limitOrders.emplace_back(order);
   depth += order.getShares();
   return --limitOrders.end();
