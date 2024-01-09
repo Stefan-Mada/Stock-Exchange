@@ -13,14 +13,14 @@
 
 namespace Exchange {
 
-auto OrderBook::addOrder(OrderType orderType, int shares, int limitPrice, int timeInForce) -> OrderExecution {
+auto OrderBook::addOrder(OrderAction orderType, int shares, int limitPrice, int timeInForce) -> OrderExecution {
     return addOrder(Order{currentOrderId++, orderType, shares, limitPrice, timeInForce});
 }
 
 auto OrderBook::addOrder(const Order& order) -> OrderExecution {
     const auto orderPrice = order.getLimitPrice();
     const auto orderId = order.getOrderId();
-    auto& buyOrSellMap = (order.getOrderType() == OrderType::buy) ? buyMap : sellMap;
+    auto& buyOrSellMap = (order.getOrderType() == OrderAction::buy) ? buyMap : sellMap;
 
     if(isExecutable(order))
         return executeOrder(order);
@@ -47,7 +47,7 @@ void OrderBook::cancelOrder(int orderId) {
     const int price = orderIterator->getLimitPrice();
 
     LimitPrice& limitPrice = priceToLimitMap.at(price);
-    OrderType removedType = limitPrice.removeOrder(orderIterator);
+    OrderAction removedType = limitPrice.removeOrder(orderIterator);
     idToOrderIteratorMap.erase(orderId);
 
     // Need to erase empty limitPrices here, as gives incorrect info on lowest bids/asks
@@ -64,8 +64,8 @@ auto OrderBook::executeOrder(const Order& order) -> OrderExecution {
     OrderExecution totalExec{baseOrderId};
 
     while(sharesLeftToExec > 0 && isExecutable(order)) {
-        OrderType targetLimitType = (order.getOrderType() == OrderType::sell) ? OrderType::buy : OrderType::sell;
-        LimitPrice& targetLimit = (order.getOrderType() == OrderType::sell) ? (--buyMap.end())->second : sellMap.begin()->second;
+        OrderAction targetLimitType = (order.getOrderType() == OrderAction::sell) ? OrderAction::buy : OrderAction::sell;
+        LimitPrice& targetLimit = (order.getOrderType() == OrderAction::sell) ? (--buyMap.end())->second : sellMap.begin()->second;
         
         const int sharesToExecInLimit = std::min(sharesLeftToExec, targetLimit.getDepth());
 
@@ -124,16 +124,16 @@ auto OrderBook::isExecutable(const Order& order) const -> bool {
     auto bestAsk = getBestAsk();
     auto bestBid = getBestBid();
 
-    if(orderType == OrderType::buy && bestAsk && price >= bestAsk.value())
+    if(orderType == OrderAction::buy && bestAsk && price >= bestAsk.value())
         return true;
-    if(orderType == OrderType::sell && bestBid && price <= bestBid)
+    if(orderType == OrderAction::sell && bestBid && price <= bestBid)
         return true;
     
     return false;
 }
 
-void OrderBook::removeLimitMap(int price, OrderType orderType) {
-    if(orderType == OrderType::buy) {
+void OrderBook::removeLimitMap(int price, OrderAction orderType) {
+    if(orderType == OrderAction::buy) {
         archivedLimitMaps.emplace(price, priceToLimitMap.at(price));
         buyMap.erase(price);
     }

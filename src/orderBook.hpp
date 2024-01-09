@@ -41,7 +41,7 @@ struct OrderBook {
      * @param timeInForce   Time until order expires TODO: Make meaningful
      * @return OrderExecution, containing order's unique ID, and info about any orders executed by adding this order
      */
-    auto addOrder(OrderType orderType, int shares, int limitPrice,
+    auto addOrder(OrderAction orderType, int shares, int limitPrice,
                   int timeInForce = 0) -> OrderExecution;
 
     /**
@@ -113,7 +113,7 @@ struct OrderBook {
      * @param orderType     Whether it is a buying or selling limitMap
      * @warning Doesn't check to see if limitMap exists in the buy/sell Map
      */
-    void removeLimitMap(int price, OrderType orderType);
+    void removeLimitMap(int price, OrderAction orderType);
 
     std::map<int, LimitPrice> buyMap;
     std::map<int, LimitPrice> sellMap;

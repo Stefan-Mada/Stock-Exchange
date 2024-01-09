@@ -20,7 +20,7 @@ namespace Exchange {
  * @brief Order types possible for an order: currently buy or sell
  * 
  */
-enum OrderType {
+enum OrderAction {
     buy,
     sell
 };
@@ -39,7 +39,7 @@ struct Order {
      * @param limitPrice    Price for order
      * @param timeInForce   Time the order is valid for
      */
-    Order(int orderId, OrderType orderType, int shares, int limitPrice, int timeInForce = 0)
+    Order(int orderId, OrderAction orderType, int shares, int limitPrice, int timeInForce = 0)
         : orderId{orderId}, orderType{orderType}, shares{shares}, limitPrice{limitPrice}, timeInForce{timeInForce} {}
 
     /**
@@ -47,7 +47,7 @@ struct Order {
      * 
      * @return OrderType (buy or sell)
      */
-    [[nodiscard]] auto getOrderType() const -> OrderType;
+    [[nodiscard]] auto getOrderType() const -> OrderAction;
 
     /**
      * @brief Get the limit price of this order
@@ -97,7 +97,7 @@ struct Order {
 
   private:
     int orderId;
-    OrderType orderType;
+    OrderAction orderType;
     int shares;
     int limitPrice;
 

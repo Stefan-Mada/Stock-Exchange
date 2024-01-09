@@ -45,7 +45,7 @@ struct LimitPrice {
      * @return The type of the order removed.
      * @warning Doesn't check to ensure iterator is valid
      */
-    auto removeOrder(std::list<Order>::const_iterator pos) -> OrderType;
+    auto removeOrder(std::list<Order>::const_iterator pos) -> OrderAction;
 
     /**
      * @brief Check if limitPrice has any orders in it

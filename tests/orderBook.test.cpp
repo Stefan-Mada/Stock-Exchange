@@ -15,7 +15,7 @@
 #include <utility>
 
 using namespace Exchange;
-using enum OrderType;
+using enum OrderAction;
 
 TEST_SUITE_BEGIN("orderBook");
 

@@ -13,7 +13,7 @@
 
 namespace Exchange {
 
-auto Order::getOrderType() const -> OrderType { return orderType; }
+auto Order::getOrderType() const -> OrderAction { return orderType; }
 
 auto Order::getLimitPrice() const -> int { return limitPrice; }
 

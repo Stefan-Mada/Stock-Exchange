@@ -24,8 +24,8 @@ auto LimitPrice::addOrder(const Order &order) -> std::list<Order>::iterator {
 }
 
 auto LimitPrice::removeOrder(std::list<Order>::const_iterator pos)
-    -> OrderType {
-  OrderType type = pos->getOrderType();
+    -> OrderAction {
+  OrderAction type = pos->getOrderType();
   depth -= pos->getShares();
   limitOrders.erase(pos);
 
