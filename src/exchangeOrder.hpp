@@ -45,13 +45,19 @@ struct ExchangeOrder {
     // Want exchange to be able to read the members without setting useless getters
     friend class Exchange;
 
-    ExchangeOrder(OrderAction orderAction, OrderType orderType, TimeInForce timeInForce, int price, int shares, const std::string& symbol)
-                    : orderAction{orderAction}, orderType{orderType}, timeInForce{timeInForce}, price{price}, shares{shares}, symbol{symbol} {}
+    ExchangeOrder(OrderAction orderAction, TimeInForce timeInForce, int price, int shares, const std::string& symbol)
+                    : orderAction{orderAction}, orderType{OrderType::limit}, timeInForce{timeInForce}, price{price}, shares{shares}, symbol{symbol} {}
+
+    ExchangeOrder(OrderAction orderAction, TimeInForce timeInForce, int money, const std::string& symbol)
+                    : orderAction{orderAction}, orderType{OrderType::market}, timeInForce{timeInForce}, price{money}, shares{0}, symbol{symbol} {}
+
 
 private:
     const OrderAction orderAction;
     const OrderType orderType;
     const TimeInForce timeInForce;
+
+    // Used as limit price, but also overall money for a market order
     const int price;
     const int shares;
     const std::string symbol;

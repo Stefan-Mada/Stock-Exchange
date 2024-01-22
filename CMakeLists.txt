@@ -30,7 +30,9 @@ set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY};--config-file=${CMAKE_SOURCE_DIR}/.clang
 set(STOCKEXCHANGE_SRCS  src/orderBook.cpp
                         src/limitPrice.cpp
                         src/order.cpp
-                        src/orderExecution.cpp)
+                        src/orderExecution.cpp
+                        src/user.cpp
+                        src/exchange.cpp)
 
 # Turn sources into a static library for use in testing AND in main executable
 add_library(StockExchangeLib STATIC ${STOCKEXCHANGE_SRCS})

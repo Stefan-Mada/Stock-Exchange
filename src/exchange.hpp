@@ -14,6 +14,7 @@
 
 #include "exchangeOrder.hpp"
 #include "orderBook.hpp"
+#include "user.hpp"
 #include <unordered_map>
 
 namespace Exchange {
@@ -21,10 +22,14 @@ namespace Exchange {
 struct Exchange {
     Exchange() = default;
 
-    void addOrder(const ExchangeOrder& order);
+    void addOrder(int userId, const ExchangeOrder& order);
 
 private:
+    bool canPlaceOrder(int userId, const ExchangeOrder& order);
+
     std::unordered_map<std::string, OrderBook> orderBookMap;
+    std::unordered_map<int, User> userMap;
+    std::unordered_map<std::string, std::unordered_map<int, User&>> userMapViaOrderId;
 };
 
 } // namespace Exchange
